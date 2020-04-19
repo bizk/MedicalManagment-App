@@ -1,17 +1,59 @@
 import React from 'react';
-import * as eva from '@eva-design/eva';
-import { ApplicationProvider, Layout, Text } from '@ui-kitten/components';
+import { View, Text } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { ThemeProvider, Button, Divider, Header, Icon } from 'react-native-elements';
+
+const theme = {
+  colors: {
+    primary: '#FF5656',
+    grey0: "#DAD6D6"
+  }
+}
 
 export default function App() {
+  
   return (
-    <ApplicationProvider {...eva} theme={eva.light}>
-      <HomeScreen />
-    </ApplicationProvider>
+    <NavigationContainer>    
+      <ThemeProvider theme={theme}>
+        <HomeScreen/>
+      </ThemeProvider>
+      
+    </NavigationContainer>
+    
   );
 }
 
-const HomeScreen = () => (
-  <Layout style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-    <Text category='h1'>HOME</Text>
-  </Layout>
-);
+class HomeScreen extends React.Component {
+  constructor() {
+    super();
+  }
+
+  render() {
+    return(
+      <View style={{ flex: 1}}>
+        <Header
+          centerComponent={{ text: 'MIS TURNOS', style: { color: '#fff' } }}
+          rightComponent={{ icon: 'home', color: '#fff' }}
+        />
+        <TurnosView/>
+      </View>
+    )
+  };
+};
+
+class TurnosView extends React.Component {
+  render() {
+    return(
+      <View style={{flex: 1}}>
+        <View style={{flex:1}}>
+          <Text>aca van los turnos </Text>
+        </View>
+        <Button 
+          icon={<Icon name='plus' type='feather' color='white' />}
+          type="solid" 
+          titleStyle={{fontSize:24, justifyContent:"center"}}
+          title="Agregar turno"/>
+      </View>
+    )
+  }
+}
