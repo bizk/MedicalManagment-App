@@ -3,7 +3,7 @@
 Este es el repositorio correspondiente a la aplicacion de coordinacion de turnos medicos, dicha aplicacion esta construida sobre react-native y se comunica con una apirest en nodejs del proyecto MedicalManagment-BackEnd
 
 ### Libreria usada para disenio
-Material
+https://react-native-elements.github.io/react-native-elements/
 
 ### WIREFRAMES
 ![Wireframe 1](https://i.imgur.com/3kdRa3h.jpg)
