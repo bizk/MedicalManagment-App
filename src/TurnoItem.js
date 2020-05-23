@@ -1,12 +1,23 @@
 import React from 'react';
 import { Text, View } from 'react-native';
-import { Card, CardContent, shadow, Button } from 'material-bread';
+import { Card, CardContent, shadow, Button, Icon } from 'material-bread';
 
 export default class TurnoItem extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            status: ""
+        }
+    }
+
+    componentDidMount() {
+        this.setState({status: this.props.booking.status})
+    }
+
     render() {
       return(
-        <Card style={{ 
-          marginTop: '3%', 
+        <Card style={{
+          marginBottom: 12, 
           ...shadow(6),
           width: '95%',
           minWidth: '95%',
@@ -18,18 +29,18 @@ export default class TurnoItem extends React.Component {
                 <View style={{flex:1, marginLeft:'4%', flexDirection: 'column', marginTop:6}}>
                     <View style={{flexDirection: 'row', marginBottom: 6}}>
                         <Text style={{ color: 'rgba(0,0,0,.9)', fontSize: 16, fontWeight: '600', marginRight: 6}}>
-                            Oftalmologia
+                            {this.props.booking.speciality.type}
                         </Text>
                         <Text style={{ color: 'rgba(0,0,0,.6)', fontSize: 16 }}>   
-                            Dr. Carlos Celada
+                            {this.props.booking.medic.sureName + " " + this.props.booking.medic.name}
                         </Text>
                     </View>
                     <View style={{flexDirection: 'row', marginBottom: 6}}>
                         <Text style={{ color: 'rgba(0,0,0,.6)', fontSize: 14, marginRight: 6 }}>   
-                            FECHA
+                            {this.props.booking.day}
                         </Text>
                         <Text style={{ color: 'rgba(0,0,0,.6)', fontSize: 14 }}>   
-                            HORA
+                            {this.props.booking.time_start}
                         </Text>
                     </View>
                 </View>
