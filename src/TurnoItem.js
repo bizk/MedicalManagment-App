@@ -8,11 +8,57 @@ export default class TurnoItem extends React.Component {
         this.state = {
             status: ""
         }
+        this.confirmBooking = this.confirmBooking.bind(this);
+        this.cancelBooking = this.cancelBooking.bind(this);
     }
 
     componentDidMount() {
         this.setState({status: this.props.booking.status})
     }
+
+    async confirmBooking() {
+        console.log(this.props.booking.bookingId);
+        try{
+          fetch("http://192.168.0.224:8080/booking/confirmBooking" ,{
+            method: 'PUT',
+            mode: "cors",
+            headers:{ 'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                bookingId: this.props.booking.bookingId
+            })
+          })
+          .then(res => {  
+            console.log(res.status)
+            return res.json()
+          })
+          .then(json => console.log(json))
+          .catch(e => console.log(e));
+        } catch (e) {
+          console.log(e) 
+        }
+      }
+
+      async cancelBooking() {
+        console.log(this.props.booking.bookingId);
+        try{
+            fetch("http://192.168.0.224:8080/booking/cancelBooking" ,{
+                method: 'PUT',
+                mode: "cors",
+                headers:{ 'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    bookingId: this.props.booking.bookingId
+                })
+            })
+            .then(res => {  
+                console.log(res.status)
+                return res.json()
+            })
+            .then(resJson => console.log(resJson))
+            .catch(e => console.log(e));
+        } catch (e) {
+          console.log(e) 
+        }
+      }
 
     render() {
       return(
@@ -45,8 +91,8 @@ export default class TurnoItem extends React.Component {
                     </View>
                 </View>
                 <View style={{flexDirection:'column'}}>
-                    <Button text={"Cancelar"} textColor={"#E05858"} dense/>
-                    <Button text={'Confirmar'} type="outlined" textColor={'#009688'} borderSize={1} dense />
+                    <Button text={"Cancelar"} textColor={"#E05858"} dense onPress={this.cancelBooking} />
+                    <Button text={'Confirmar'} type="outlined" textColor={'#009688'} borderSize={1} dense onPress={this.confirmBooking} />
                 </View>
             </View>
         </Card>
