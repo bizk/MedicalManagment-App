@@ -5,6 +5,7 @@ import { ThemeProvider } from 'react-native-elements';
 import {  Appbar } from 'material-bread';
 
 import TurnosView from './src/TurnosView';
+import LoginView from './src/LoginView';
 
 const theme = {
   colors: {
@@ -18,7 +19,8 @@ export default function App() {
   return (
     <NavigationContainer>    
       <ThemeProvider theme={theme}>
-        <HomeScreen/>
+        {/* <HomeScreen/> */}
+        <LoginView/>
       </ThemeProvider>
       
     </NavigationContainer>

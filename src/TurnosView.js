@@ -1,11 +1,10 @@
-import React, {useState} from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import React from 'react';
+import { View, ScrollView } from 'react-native';
 import { Icon, Overlay } from 'react-native-elements';
-import { Divider, Heading, Select, Subtitle, shadow, Button } from 'material-bread';
+import { Divider, Heading, Subtitle, Button } from 'material-bread';
 import {Picker} from '@react-native-community/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from "moment";
-import Modal from 'react-native-modal';
 import TurnoItem from './TurnoItem';
 
 export default class TurnosView extends React.Component {
@@ -125,12 +124,6 @@ export default class TurnosView extends React.Component {
     }
 
     render() {
-      const data = [
-        { id: 1, name: 'Option 1' },
-        { id: 2, name: 'Option 2' },
-        { id: 3, name: 'Option 3' },
-      ]
-  
       return(
         <View style={{flex: 1, backgroundColor:'#F9FAFF'}}>
             <Overlay isVisible={this.state.isModalVisible}>
