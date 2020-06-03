@@ -19,7 +19,7 @@ export default class TurnoItem extends React.Component {
     async confirmBooking() {
         console.log(this.props.booking.bookingId);
         try{
-          fetch("http://192.168.0.224:8080/booking/confirmBooking" ,{
+          fetch("localhost:8080/booking/confirmBooking" ,{
             method: 'PUT',
             mode: "cors",
             headers:{ 'Content-Type': 'application/json'},
@@ -41,7 +41,7 @@ export default class TurnoItem extends React.Component {
       async cancelBooking() {
         console.log(this.props.booking.bookingId);
         try{
-            fetch("http://192.168.0.224:8080/booking/cancelBooking" ,{
+            fetch("localhost:8080/booking/cancelBooking" ,{
                 method: 'PUT',
                 mode: "cors",
                 headers:{ 'Content-Type': 'application/json'},

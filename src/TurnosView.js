@@ -34,7 +34,7 @@ export default class TurnosView extends React.Component {
   
     async getAllBookings() {
       try{
-        fetch("http://192.168.0.224:8080/booking/getAll" ,{
+        fetch("localhost:8080/booking/getAll" ,{
           method: 'GET',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
@@ -54,7 +54,7 @@ export default class TurnosView extends React.Component {
   
     async getAllSpecialities() {
       try {
-        fetch("http://192.168.0.224:8080/speciality/getAll" , {
+        fetch("http://localhost:8080/speciality/getAll" , {
           method: 'GET',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
@@ -91,7 +91,7 @@ export default class TurnosView extends React.Component {
 
     async dateHttpRequest() {
       try {
-        fetch("http://192.168.0.224:8080/medWorkHs/getWorkHours_specDate" , {
+        fetch("localhost:8080/medWorkHs/getWorkHours_specDate" , {
           method: 'POST',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
@@ -233,9 +233,8 @@ export default class TurnosView extends React.Component {
                 {this.state.bookings.map((booking) => {
                     if ( booking === undefined) {
                     return ""
-                    }
-                    else {
-                    return <TurnoItem key={booking.bookingId} booking={booking}/> 
+                    } else {
+                     return <TurnoItem key={booking.bookingId} booking={booking}/> 
                     }
                 })}
                 </ScrollView>

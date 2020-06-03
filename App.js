@@ -5,6 +5,7 @@ import { ThemeProvider } from 'react-native-elements';
 import {  Appbar } from 'material-bread';
 
 import TurnosView from './src/TurnosView';
+import TurnosMedicosView from './src/TurnosMedicosView';
 import LoginView from './src/LoginView';
 
 const theme = {
@@ -19,8 +20,8 @@ export default function App() {
   return (
     <NavigationContainer>    
       <ThemeProvider theme={theme}>
-        {/* <HomeScreen/> */}
-        <LoginView/>
+        <HomeScreen/>
+        {/* <LoginView/> */}
       </ThemeProvider>
       
     </NavigationContainer>
@@ -44,7 +45,8 @@ class HomeScreen extends React.Component {
           elevation={8}
           style={{marginTop: '2%'}}
           />
-        <TurnosView/>
+        {/* <TurnosView/> */}
+        <TurnosMedicosView/>
       </View>
     )
   };
