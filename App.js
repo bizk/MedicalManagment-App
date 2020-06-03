@@ -32,21 +32,28 @@ export default function App() {
 class HomeScreen extends React.Component {
   constructor() {
     super();
+    this.state = {
+      role: "medic"
+    }
   }
 
   render() {
     return(
       <View style={{ flex: 1}}>
         <Appbar 
-          title={"Mis turnos"} 
+          title={"Mis turnos"}
           titleStyles={{color:'#E05858', fontWeight: 'bold', textAlignVertical:'center', paddingTop:'3%'}}
           barType={'normal'} 
           color={'#FFFFFF'}
           elevation={8}
           style={{marginTop: '2%'}}
           />
-        {/* <TurnosView/> */}
-        <TurnosMedicosView/>
+          {
+            (this.state.role === "medic") && <TurnosMedicosView/> 
+          }
+          {
+            (this.state.role === "patient") &&  <TurnosView/>
+          }
       </View>
     )
   };
