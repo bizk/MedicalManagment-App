@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, View } from 'react-native';
-import { Card, CardContent, shadow, Button, Icon } from 'material-bread';
+import { Card, CardContent, shadow, Button, Icon, Subtitle } from 'material-bread';
 
 export default class TurnoItem extends React.Component {
     constructor(props) {
@@ -19,7 +19,7 @@ export default class TurnoItem extends React.Component {
     async confirmBooking() {
         console.log(this.props.booking.bookingId);
         try{
-          fetch("localhost:8080/booking/confirmBooking" ,{
+          fetch("192.168.0.224:8080/booking/confirmBooking" ,{
             method: 'PUT',
             mode: "cors",
             headers:{ 'Content-Type': 'application/json'},
@@ -41,7 +41,7 @@ export default class TurnoItem extends React.Component {
       async cancelBooking() {
         console.log(this.props.booking.bookingId);
         try{
-            fetch("localhost:8080/booking/cancelBooking" ,{
+            fetch("192.168.0.224:8080/booking/cancelBooking" ,{
                 method: 'PUT',
                 mode: "cors",
                 headers:{ 'Content-Type': 'application/json'},
@@ -95,6 +95,9 @@ export default class TurnoItem extends React.Component {
                     <Button text={'Confirmar'} type="outlined" textColor={'#009688'} borderSize={1} dense onPress={this.confirmBooking} />
                 </View>
             </View>
+            {/* <View style={{paddingTop: 5, marginTop: 5, width: '100%', alignItems:"center", borderTopWidth: 0.5, borderColor: '#FF5722'}}>
+              <Subtitle type={1} color={'#FF5722'} text="Cancelado por el centro medico" />
+            </View> */}
         </Card>
       );
     }

@@ -7,6 +7,8 @@ export default class LoginView extends React.Component {
         super(props);
         this.state = {
             loginMessageError: false,
+            userInput: "Usuario",
+            userSecret: "*****"
         }
     }
 
@@ -25,8 +27,8 @@ export default class LoginView extends React.Component {
                             <TextField
                                 containerStyle={{ marginTop: 20 }}
                                 type={'outlined'}
-                                value={"Usuario"}
-                                onChangeText={value => console.log("usuario",value)}
+                                value={this.state.userInput}
+                                onChangeText={value => this.setState({userInput: value})}
                                 />
                         </View>
                         <View style={{marginTop: 20}}>
@@ -34,11 +36,13 @@ export default class LoginView extends React.Component {
                             <TextField
                                 containerStyle={{ marginTop: 20 }}
                                 type={'outlined'}
-                                value={"Contrasena"}
+                                value={this.state.userSecret}
                                 onChangeText={value => console.log("Contrasena",value)}
                                 />
                         </View>
-
+                        {/* <View style={{marginTop: 15}}>
+                            <Subtitle color={'#E05858'} type={1} text="Usuario o contraseña incorrecta. Vuelva a intentarlo o comuníquese con su centro de salud,"/>
+                        </View> */}
                         <View style={{flex: 1}}/>
                         
                         <Button 

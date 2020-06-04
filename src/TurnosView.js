@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ScrollView } from 'react-native';
 import { Icon, Overlay } from 'react-native-elements';
-import { Divider, Heading, Subtitle, Button } from 'material-bread';
+import { Divider, Heading, Subtitle, Button, Dialog } from 'material-bread';
 import {Picker} from '@react-native-community/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from "moment";
@@ -11,7 +11,8 @@ export default class TurnosView extends React.Component {
     constructor(props) {
       super(props);
       this.state = {
-        isModalVisible: true,
+        isModalVisible: false,
+        visible:false,
         selectedItemThree: 1,
         specialityValue: '',
         specialityIndex: -1,
@@ -29,12 +30,12 @@ export default class TurnosView extends React.Component {
     }
     
     toggleModal() {
-      this.setState({isModalVisible: !this.state.isModalVisible})
+      this.setState({isModalVisible: !this.state.isModalVisible, visible: true})
     };
   
     async getAllBookings() {
       try{
-        fetch("localhost:8080/booking/getAll" ,{
+        fetch("http://192.168.0.224:8080/booking/getAll" ,{
           method: 'GET',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
@@ -54,7 +55,7 @@ export default class TurnosView extends React.Component {
   
     async getAllSpecialities() {
       try {
-        fetch("http://localhost:8080/speciality/getAll" , {
+        fetch("http://192.168.0.224:8080/speciality/getAll" , {
           method: 'GET',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
@@ -91,7 +92,7 @@ export default class TurnosView extends React.Component {
 
     async dateHttpRequest() {
       try {
-        fetch("localhost:8080/medWorkHs/getWorkHours_specDate" , {
+        fetch("http://192.168.0.224:8080/medWorkHs/getWorkHours_specDate" , {
           method: 'POST',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
@@ -126,7 +127,58 @@ export default class TurnosView extends React.Component {
     render() {
       return(
         <View style={{flex: 1, backgroundColor:'#F9FAFF'}}>
-            <Overlay isVisible={this.state.isModalVisible}>
+          {/* <Dialog
+            visible={this.state.visible}
+            onTouchOutside={() => this.setState({ visible: false })}
+            title={'Desea crear su turno?'}
+            supportingText={
+              'El dia 3/7/2020 7:30 a 8:00 hs para la especialidad GENERAL con el medico Celada, Maria?'
+            }
+            actionItems={[
+              {
+                text: 'Cancel',
+                onPress: () =>  this.setState({ visible: false }),
+              },
+              {
+                text: 'OK',
+                onPress: () =>  this.setState({ visible: false }),
+              },
+            ]}
+          /> */}
+          {/* <Dialog
+          visible={this.state.visible}
+          onTouchOutside={() => this.setState({ visible: false })}
+          title={'Desea confirmar turno?'}
+          actionItems={[
+            {
+              text: 'Cancelar',
+              onPress: () =>  this.setState({ visible: false }),
+            },
+            {
+              text: 'OK',
+              onPress: () =>  this.setState({ visible: false }),
+            },
+          ]}
+          /> */}
+          {/* <Dialog
+          visible={this.state.visible}
+          onTouchOutside={() => this.setState({ visible: false })}
+          title={'Desea Cancelar turno?'}
+          supportingText={
+              'Si cancela el turno antes de las 12 hs de este sufrira recargos'
+            }
+          actionItems={[
+            {
+              text: 'Cancelar',
+              onPress: () =>  this.setState({ visible: false }),
+            },
+            {
+              text: 'Confirmar',
+              onPress: () =>  this.setState({ visible: false }),
+            },
+          ]}
+          /> */}
+          <Overlay isVisible={this.state.isModalVisible}>
               <View style= {{flex: 1, marginTop: 8}}>  
                 <View style={{width: '100%', alignItems: 'center', borderBottomColor:'#E05858', paddingBottom: 8, borderBottomWidth: 0.5}}>
                   <Heading style={{color: '#E05858'}} type={4} text="Crear turno" />     
@@ -134,7 +186,7 @@ export default class TurnosView extends React.Component {
                 
                 <View style={{marginTop: 15}}>
                   <Subtitle type={1} text="Especialidad" />
-                  <View style={{borderBottomWidth: 0.5, backgroundColor:'#f0f0f0'}}>
+                  <View style={{borderBottomWidth: 0.5}}>
                     <Picker   
                     selectedValue={this.state.specialityValue}
                     mode={'dropdown'}
@@ -176,42 +228,45 @@ export default class TurnosView extends React.Component {
                   }
                   <Divider/>
                 </View>    
-
                 <View>
                   <Subtitle type={1} text="Medico" />     
-                  <View style={{borderBottomWidth: 0.5}}>
+                  <View style={{borderBottomWidth: 0.5, }}>
                     <Picker   
                     selectedValue={this.state.bookingDateMedicValue}
                     mode={'dropdown'}
                     onValueChange={(itemValue, itemIndex) =>
                       this.setState({bookingDateMedicValue: itemValue})
                     }>
-                      { this.state.bookingDateMedic.length > 0 && (
+                      { (this.state.bookingDateMedic.length > 0) && (
                         this.state.bookingDateMedic.map(medics => {
                           if ( medics !== undefined) {
                             return <Picker.Item key={medics.id} label={medics.person.sureName + " " + medics.person.name} value={medics.person}/> 
                           } 
                         })
-                      )
-                    }
+                      ) 
+                      }
                     </Picker>
                   </View>
                   <Divider/>
                 </View>
-
-                <Subtitle type={1} text="Turno" />     
-                <Picker   
-                selectedValue={this.state.language}
-                style={{height: 50, width: '100%'}}
-                mode={'dropdown'}
-                onValueChange={(itemValue, itemIndex) =>
-                  this.setState({language: itemValue})
-                }
-                >
-                  <Picker.Item label="Java" value="java" />
-                  <Picker.Item label="JavaScript" value="js" />
-                </Picker>
-                <Divider/>
+                
+                <View>
+                  <Subtitle type={1} text="Turno" />         
+                  <View style={{borderBottomWidth: 0.5,}}>
+                    <Picker   
+                    selectedValue={this.state.language}
+                    style={{height: 50, width: '100%'}}
+                    mode={'dropdown'}
+                    onValueChange={(itemValue, itemIndex) =>
+                      this.setState({language: itemValue})
+                    }
+                    >
+                      <Picker.Item label="7:00 - 7:30" value="java" />
+                      <Picker.Item label="7:30 - 8:00" value="js" />
+                    </Picker>
+                  </View>
+                  <Divider/>
+                </View>
 
                 <View style={{flex: 1}}/>
                 <Button 
@@ -227,22 +282,22 @@ export default class TurnosView extends React.Component {
                 />
               </View>
           </Overlay>
-            
+
           <View style={{flex: 1, alignItems: 'center'}}>
-                <ScrollView style={{marginTop: 12}}>
-                {this.state.bookings.map((booking) => {
-                    if ( booking === undefined) {
-                    return ""
-                    } else {
-                     return <TurnoItem key={booking.bookingId} booking={booking}/> 
-                    }
-                })}
-                </ScrollView>
-                <View style={{
-                    position:'absolute',
-                    bottom:0,
-                    marginBottom: 12,
-                }}>
+            <ScrollView style={{marginTop: 12}}>
+              {this.state.bookings.map((booking) => {
+                if ( booking === undefined) {
+                  return ""
+                } else {
+                  return <TurnoItem key={booking.bookingId} booking={booking}/> 
+                }
+              })}
+            </ScrollView>
+            <View style={{
+              position:'absolute',
+              bottom:0,
+              marginBottom: 12,
+              }}>
                     <Button
                     icon={<Icon name="add" />}
                     text={'Agregar turno'}

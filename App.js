@@ -33,7 +33,7 @@ class HomeScreen extends React.Component {
   constructor() {
     super();
     this.state = {
-      role: "medic"
+      role: "patient"
     }
   }
 
