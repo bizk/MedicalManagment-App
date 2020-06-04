@@ -5,21 +5,24 @@ import { Card, CardContent, shadow, Button, Icon, Subtitle } from 'material-brea
 export default class TurnoItem extends React.Component {
     constructor(props) {
         super(props);
+        console.log("aaa", this.props.booking.status);
+
         this.state = {
-            status: ""
+            status: this.props.booking.status
         }
         this.confirmBooking = this.confirmBooking.bind(this);
         this.cancelBooking = this.cancelBooking.bind(this);
     }
 
     componentDidMount() {
-        this.setState({status: this.props.booking.status})
+      console.log(this.props.booking.bookingId,this.props.bookingStatus,this.props.booking.status);
+      this.setState({status: this.props.booking.status})
     }
 
     async confirmBooking() {
         console.log(this.props.booking.bookingId);
         try{
-          fetch("192.168.0.224:8080/booking/confirmBooking" ,{
+          fetch("http://192.168.0.224:8080/booking/confirmBooking" ,{
             method: 'PUT',
             mode: "cors",
             headers:{ 'Content-Type': 'application/json'},
@@ -28,10 +31,12 @@ export default class TurnoItem extends React.Component {
             })
           })
           .then(res => {  
-            console.log(res.status)
+            if (res.status === 200) 
+              this.setState({status: "confirmed"})
+            else 
+              this.setState({status: "expirado"})  
             return res.json()
           })
-          .then(json => console.log(json))
           .catch(e => console.log(e));
         } catch (e) {
           console.log(e) 
@@ -39,9 +44,8 @@ export default class TurnoItem extends React.Component {
       }
 
       async cancelBooking() {
-        console.log(this.props.booking.bookingId);
         try{
-            fetch("192.168.0.224:8080/booking/cancelBooking" ,{
+            fetch("http://192.168.0.224:8080/booking/cancelBooking" ,{
                 method: 'PUT',
                 mode: "cors",
                 headers:{ 'Content-Type': 'application/json'},
@@ -50,10 +54,12 @@ export default class TurnoItem extends React.Component {
                 })
             })
             .then(res => {  
-                console.log(res.status)
-                return res.json()
+              if (res.status === 200) 
+                this.setState({status: "canceled"})
+              else 
+                this.setState({status: "expirado"})  
+              return res.json()
             })
-            .then(resJson => console.log(resJson))
             .catch(e => console.log(e));
         } catch (e) {
           console.log(e) 
@@ -90,14 +96,29 @@ export default class TurnoItem extends React.Component {
                         </Text>
                     </View>
                 </View>
-                <View style={{flexDirection:'column'}}>
-                    <Button text={"Cancelar"} textColor={"#E05858"} dense onPress={this.cancelBooking} />
-                    <Button text={'Confirmar'} type="outlined" textColor={'#009688'} borderSize={1} dense onPress={this.confirmBooking} />
+                <View style={{flexDirection:'column', backgroundColor:'#fff'}}>
+                    <Button text={"Cancelar"} disabled={(this.state.status === "canceled" || this.state.status === "expirado") ? true : false} textColor={"#E05858"} dense onPress={this.cancelBooking} />
+                    <Button text={'Confirmar'} disabled={(this.state.status === "") ? false : true} type="outlined" textColor={'#009688'} borderSize={1} dense onPress={this.confirmBooking} />
                 </View>
             </View>
             {/* <View style={{paddingTop: 5, marginTop: 5, width: '100%', alignItems:"center", borderTopWidth: 0.5, borderColor: '#FF5722'}}>
               <Subtitle type={1} color={'#FF5722'} text="Cancelado por el centro medico" />
             </View> */}
+            {((this.state.status === "canceled") && 
+              <View style={{paddingTop: 5, marginTop: 5, width: '100%', alignItems:"center", borderTopWidth: 0.5, borderColor: '#E05858'}}>
+                <Subtitle type={1} color={'#E05858'} text="Cancelado por el paciente" />
+              </View>
+            )}
+            {((this.state.status === "confirmed") && 
+              <View style={{paddingTop: 5, marginTop: 5, width: '100%', alignItems:"center", borderTopWidth: 0.5, borderColor: '#009688'}}>
+                <Subtitle type={1} color={'#009688'} text="Confirmado" />
+              </View>
+            )}
+            {((this.state.status === "expirado") && 
+              <View style={{paddingTop: 5, marginTop: 5, width: '100%', alignItems:"center", borderTopWidth: 0.5, borderColor: '#607d8b'}}>
+                <Subtitle type={1} color={'#607d8b'} text="Expirado" />
+              </View>
+            )}
         </Card>
       );
     }

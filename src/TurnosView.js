@@ -289,7 +289,7 @@ export default class TurnosView extends React.Component {
                 if ( booking === undefined) {
                   return ""
                 } else {
-                  return <TurnoItem key={booking.bookingId} booking={booking}/> 
+                  return <TurnoItem key={booking.bookingId} booking={booking} bookingStatus={booking.status}/> 
                 }
               })}
             </ScrollView>
