@@ -33,7 +33,7 @@ class HomeScreen extends React.Component {
   constructor() {
     super();
     this.state = {
-      role: "patient"
+      role: "medic"
     }
   }
 
@@ -41,10 +41,10 @@ class HomeScreen extends React.Component {
     return(
       <View style={{ flex: 1}}>
         <Appbar 
-          title={"Mis turnos"}
-          titleStyles={{color:'#E05858', fontWeight: 'bold', textAlignVertical:'center', paddingTop:'3%'}}
+          title={"Mis horarios"}
+          titleStyles={{color:'#fff', fontWeight: 'bold', textAlignVertical:'center', paddingTop:'3%'}}
           barType={'normal'} 
-          color={'#FFFFFF'}
+          color={'#00BCD4'}
           elevation={8}
           style={{marginTop: '2%'}}
           />

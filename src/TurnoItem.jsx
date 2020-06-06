@@ -1,70 +1,94 @@
 import React from 'react';
-import { Text, View } from 'react-native';
-import { Card, CardContent, shadow, Button, Icon, Subtitle } from 'material-bread';
+import {
+  Text,
+  View
+} from 'react-native';
+import {
+  Card,
+  CardContent,
+  shadow,
+  Button,
+  Icon,
+  Subtitle
+} from 'material-bread';
 
 export default class TurnoItem extends React.Component {
     constructor(props) {
-        super(props);
-        console.log("aaa", this.props.booking.status);
+      super(props);
+      console.log("aaa", this.props.booking.status);
 
-        this.state = {
-            status: this.props.booking.status
-        }
-        this.confirmBooking = this.confirmBooking.bind(this);
-        this.cancelBooking = this.cancelBooking.bind(this);
+      this.state = {
+        status: this.props.booking.status
+      }
+      this.confirmBooking = this.confirmBooking.bind(this);
+      this.cancelBooking = this.cancelBooking.bind(this);
     }
 
     componentDidMount() {
-      console.log(this.props.booking.bookingId,this.props.bookingStatus,this.props.booking.status);
-      this.setState({status: this.props.booking.status})
+      console.log(this.props.booking.bookingId, this.props.bookingStatus, this.props.booking.status);
+      this.setState({
+        status: this.props.booking.status
+      })
     }
 
     async confirmBooking() {
-        console.log(this.props.booking.bookingId);
-        try{
-          fetch("http://192.168.0.224:8080/booking/confirmBooking" ,{
+      console.log(this.props.booking.bookingId);
+      try {
+        fetch("http://192.168.0.224:8080/booking/confirmBooking", {
             method: 'PUT',
             mode: "cors",
-            headers:{ 'Content-Type': 'application/json'},
+            headers: {
+              'Content-Type': 'application/json'
+            },
             body: JSON.stringify({
-                bookingId: this.props.booking.bookingId
+              bookingId: this.props.booking.bookingId
             })
           })
-          .then(res => {  
-            if (res.status === 200) 
-              this.setState({status: "confirmed"})
-            else 
-              this.setState({status: "expirado"})  
+          .then(res => {
+            if (res.status === 200)
+              this.setState({
+                status: "confirmed"
+              })
+            else
+              this.setState({
+                status: "expirado"
+              })
             return res.json()
           })
           .catch(e => console.log(e));
-        } catch (e) {
-          console.log(e) 
-        }
+      } catch (e) {
+        console.log(e)
       }
+    }
 
-      async cancelBooking() {
-        try{
-            fetch("http://192.168.0.224:8080/booking/cancelBooking" ,{
-                method: 'PUT',
-                mode: "cors",
-                headers:{ 'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    bookingId: this.props.booking.bookingId
-                })
+    async cancelBooking() {
+      try {
+        fetch("http://192.168.0.224:8080/booking/cancelBooking", {
+            method: 'PUT',
+            mode: "cors",
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              bookingId: this.props.booking.bookingId
             })
-            .then(res => {  
-              if (res.status === 200) 
-                this.setState({status: "canceled"})
-              else 
-                this.setState({status: "expirado"})  
-              return res.json()
-            })
-            .catch(e => console.log(e));
-        } catch (e) {
-          console.log(e) 
-        }
+          })
+          .then(res => {
+            if (res.status === 200)
+              this.setState({
+                status: "canceled"
+              })
+            else
+              this.setState({
+                status: "expirado"
+              })
+            return res.json()
+          })
+          .catch(e => console.log(e));
+      } catch (e) {
+        console.log(e)
       }
+    }
 
     render() {
       return(

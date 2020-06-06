@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ScrollView } from 'react-native';
 import { Icon, Overlay } from 'react-native-elements';
-import { Divider, Heading, Subtitle, Button } from 'material-bread';
+import { Divider, Heading, Subtitle, Button, ListSection, IconButton, ListExpand, ListItem, List, Tabs, Chip } from 'material-bread';
 import {Picker} from '@react-native-community/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from "moment";
@@ -12,7 +12,7 @@ export default class TurnosMedicosView extends React.Component {
     constructor(props) {
       super(props);
       this.state = {
-        isModalVisible: true,
+        isModalVisible: false,
         selectedItemThree: 1,
         specialityValue: '',
         specialityIndex: -1,
@@ -129,7 +129,18 @@ export default class TurnosMedicosView extends React.Component {
         var hours = ["7:00", "7:30", "8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30", "24:00"];
         return(
             <View style={{flex: 1, backgroundColor:'#F9FAFF'}}>
-                <Overlay isVisible={this.state.isModalVisible}>
+              <Tabs
+                selectedIndex={this.state.selectedTab}
+                handleChange={index => this.setState({ selectedTab: index })}
+                backgroundColor={'#00BCD4'}
+                actionItems={[
+                  { label: 'Dia' },
+                  { label: 'Semana' },
+                  { label: 'Todos' },
+                ]}
+              />
+
+                {/* <Overlay isVisible={this.state.isModalVisible}>
                 <View style= {{flex: 1, marginTop: 8}}>  
                     <View style={{width: '100%', alignItems: 'center', borderBottomColor:'#00BCD4', paddingBottom: 8, borderBottomWidth: 0.5}}>
                     <Heading style={{color: '#00BCD4'}} type={4} text="Crear horario" />     
@@ -242,7 +253,163 @@ export default class TurnosMedicosView extends React.Component {
                     />
                 </View>
             </Overlay>
+                 */}
+                <Overlay isVisible={this.state.isModalVisible}>
+                  <View style= {{flex: 1, marginTop: 8}}>  
+                      <View style={{width: '100%', alignItems: 'center', borderBottomColor:'#00BCD4', paddingBottom: 8, borderBottomWidth: 0.5}}>
+                      <Heading style={{color: '#00BCD4'}} type={4} text="Editar horario" />     
+                      </View>
+                      
+                      <View style={{marginTop: 15}}>
+                          <Subtitle type={1} text="Especialidad" />
+                          <View style={{borderBottomWidth: 0.5, backgroundColor:'#f0f0f0'}}>
+                              <Picker   
+                              selectedValue={this.state.specialityValue}
+                              mode={'dropdown'}
+                              onValueChange={(itemValue, itemIndex) => this.setState({specialityValue: itemValue, specialitySelected: itemIndex}) }>
+                              {
+                                  this.state.specialities.map(speciality => {
+                                  if ( speciality !== undefined) {
+                                      return <Picker.Item key={speciality.specialityId} label={speciality.type} value={speciality.specialityId}/> 
+                                  }
+                                  })
+                              }
+                              </Picker> 
+                          </View>     
+                          <Divider />
+                      </View>
+                      
+                      <View>
+                          <Subtitle style={{marginBottom: 5}} type={1} text="Fecha:" />
+                          <Button 
+                              text={moment(this.state.date).format('YYYY-MM-DD').toString()} 
+                              borderSize={1} 
+                              textColor={'#00BCD4'} 
+                              type="outlined" 
+                              icon={<Icon name="date-range" />} 
+                              onPress={this.toggleDatePicker} />
+                              {this.state.showDatePicker && (
+                              <DateTimePicker testID="dateTimePicker"
+                                  timeZoneOffsetInMinutes={0}
+                                  value={this.state.date}
+                                  mode={"date"}
+                                  is24Hour={true}
+                                  display="default"
+                                  maximumDate={moment().add(2, 'month').toDate()}
+                                  minimumDate={moment().add(1,'day').toDate()}
+                                  style={{backgroundColor:'red'}}
+                                  onChange={(event, selectedDate) => { this.selectDateHttpRequest(selectedDate) }} 
+                              />
+                              )
+                          }
+                          <Divider/>
+                      </View>    
+
+                      <View style={{flexDirection: 'row', width: `100%`}}>
+                          <View style={{flex: 1}}>
+                              <Subtitle type={1} text="Hora de inicio" />     
+                              <View style={{borderBottomWidth: 0.5}}>
+                                  <Picker   
+                                  selectedValue={this.state.startWorkHour}
+                                  mode={'dropdown'}
+                                  onValueChange={(itemValue, itemIndex) =>
+                                      this.setState({startWorkHour: itemIndex})
+                                  }>
+                                  {
+                                      hours.slice(0, hours.length - 1).map((hs, key) => {
+                                          return <Picker.Item key={key} label={hs} value={key}/> 
+                                      })
+                                  }
+                                  </Picker>
+                              </View>
+                          </View>
+                          <View style={{flex: 1}}>
+                              <Subtitle type={1} text="Hora de fin" />     
+                              <View style={{borderBottomWidth: 0.5}}>
+                                  <Picker   
+                                  // enabled={false}
+                                  selectedValue={this.state.finishWorkHour}
+                                  style={{height: 50, width: '100%'}}
+                                  mode={'dropdown'}
+                                  onValueChange={(itemValue, itemIndex) =>
+                                  {
+                                      let fakeIndex = itemIndex + 1 + this.state.startWorkHour
+                                      console.log(this.state.startWorkHour, itemIndex,fakeIndex, hours[fakeIndex], hours.length);
+                                      this.setState({finishWorkHour: fakeIndex})
+                                  }
+                                  }>
+                                  {
+                                      hours.slice(this.state.startWorkHour + 1).map((hs, key) => {
+                                          return <Picker.Item key={hs} label={hs} value={key}/> 
+                                      })
+                                  }
+                                  </Picker>
+                              </View>
+                          </View>
+                      </View>
+                      
+                      <Divider/>
+
+                      <View style={{flex: 1}}/>
+                      <Button 
+                      text={'Eliminar'} 
+                      textColor={'#FF5656'} 
+                      borderSize={2} 
+                      onPress={this.toggleModal}/>
+                      <Button 
+                      text={'Cancelar'} 
+                      textColor={'#00BCD4'} 
+                      borderSize={2} 
+                      onPress={this.toggleModal}/>
+                      <Button
+                      text={'Editar horario'}
+                      color={'#00BCD4'} 
+                      icon={<Icon name={'date-range'}/>}
+                      type="flat"
+                      onPress={() => {
+                          console.log(hours[this.state.startWorkHour] + " " + hours[this.state.finishWorkHour])}}
+                      />
+                  </View>
+                </Overlay>
                 
+                <View style={{flex: 1, margin: 10}}>
+                  <List style={{ width: `100%` }}>
+                    <ListSection label={'OFTALMOLOGIA - 7:00 a 12:30'}>                           
+                      <ListItem
+                        text={'Yanzon, Carlos Santiago'}
+                        secondaryText={'8:00 - 8:30'}
+                        actionItem={<IconButton name="edit" size={24} color="#6e6e6e" />}
+                      />
+                      <ListItem
+                        text={'Celada, Maria Azul'}
+                        secondaryText={'9:00 - 19:30'}
+                        actionItem={<IconButton name="edit" size={24} color="#6e6e6e" />}
+                      />
+                      <Button
+                        text={'Editar horario'}
+                        style={{width:`100%`}}
+                        type="outlined"
+                        radius={20}
+                        onPress={this.toggleModal}
+                      />
+                    </ListSection>
+                    <ListSection label={'PEDIATRIA - 15:30 a 20:30'}>                           
+                      <ListItem
+                        text={'Perez, Juan Martin'}
+                        secondaryText={'17:00 - 17:30'}
+                        actionItem={<IconButton name="edit" size={24} color="#6e6e6e" />}
+                      />
+                      <Button
+                        text={'Editar horario'}
+                        style={{width:`100%`}}
+                        type="outlined"
+                        radius={20}
+                        onPress={this.toggleModal}
+                      />
+                    </ListSection>
+                  </List>           
+                </View>
+
                 <View style={{flex: 1, alignItems: 'center'}}>
                     <ScrollView style={{marginTop: 12}}>
                     {this.state.bookings.map((booking) => {
