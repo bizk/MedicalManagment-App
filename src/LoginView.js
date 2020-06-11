@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, RecyclerViewBackedScrollView } from 'react-native';
 import { Divider, Paper, Heading, Subtitle, Button, TextField } from 'material-bread';
 
 export default class LoginView extends React.Component {
@@ -7,10 +7,36 @@ export default class LoginView extends React.Component {
         super(props);
         this.state = {
             loginMessageError: false,
-            userInput: "Usuario",
-            userSecret: "*****"
+            userInput: "medico_1",
+            userSecret: "abc123"
         }
+        
+        this.login = this.login.bind(this);
     }
+
+    async login() {
+        console.log("User Input " + this.state.userInput + " " + " Password: " + this.state.userSecret );
+        var x = this.props.loginStatus;
+
+        try{
+          fetch("http://192.168.0.224:8080/users" ,{
+            method: 'POST',
+            mode: "cors",
+            headers:{ 'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                mail: this.state.userInput,
+                password: this.state.userSecret
+            })
+            }).then(res => {
+                return res.json();
+            }).then(resJson => {
+                x(resJson);
+            })
+            .catch(e => console.log(e));
+        } catch (e) {
+          console.log(e) 
+        }
+      }
 
     render() {
 
@@ -37,7 +63,7 @@ export default class LoginView extends React.Component {
                                 containerStyle={{ marginTop: 20 }}
                                 type={'outlined'}
                                 value={this.state.userSecret}
-                                onChangeText={value => console.log("Contrasena",value)}
+                                onChangeText={value => this.setState({userSecret: value})}
                                 />
                         </View>
                         {/* <View style={{marginTop: 15}}>
@@ -50,7 +76,7 @@ export default class LoginView extends React.Component {
                             color={'#E05858'} 
                             style={{height: 45}}
                             borderSize={2} 
-                            onPress={console.log("hola!")}
+                            onPress={this.login}
                             type="contained"
                             fullWidth
                             />

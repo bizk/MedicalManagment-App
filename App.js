@@ -16,43 +16,62 @@ const theme = {
 }
 
 export default function App() {
-  
   return (
     <NavigationContainer>    
       <ThemeProvider theme={theme}>
-        <HomeScreen/>
-        {/* <LoginView/> */}
+        <MainScreen/>
       </ThemeProvider>
-      
     </NavigationContainer>
-    
   );
 }
 
+class MainScreen extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      loginStatus: "",
+      person: []
+    }
+  }
+
+  loginStatus(data) {
+    // console.log(data)
+    // console.log(data.role.role);
+    this.setState({
+      loginStatus: "200",
+      person: data
+    })
+  }
+
+  render(){
+    var loginStatus = this.loginStatus;
+    return(
+      <View style={{flex: 1}}>
+        {
+          (this.state.loginStatus === "200") ? <HomeScreen personData={this.state.person}/> : <LoginView loginStatus={loginStatus.bind(this)}/>
+        }
+      </View>
+    )
+  }
+}
 class HomeScreen extends React.Component {
   constructor() {
     super();
     this.state = {
-      role: "medic"
+      role: "",
+      titleColor: "#FF5656"
     }
   }
+
 
   render() {
     return(
       <View style={{ flex: 1}}>
-        <Appbar 
-          title={"Mis horarios"}
-          titleStyles={{color:'#fff', fontWeight: 'bold', textAlignVertical:'center', paddingTop:'3%'}}
-          barType={'normal'} 
-          color={'#00BCD4'}
-          elevation={8}
-          style={{marginTop: '2%'}}
-          />
           {
-            (this.state.role === "medic") && <TurnosMedicosView/> 
+            (this.props.personData.role.role === "medic") && <TurnosMedicosView personData={this.props.personData}/> 
           }
           {
-            (this.state.role === "patient") &&  <TurnosView/>
+            (this.props.personData.role.role === "patient") && <TurnosView personData={this.props.personData}/>
           }
       </View>
     )

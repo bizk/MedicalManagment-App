@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ScrollView } from 'react-native';
 import { Icon, Overlay } from 'react-native-elements';
-import { Divider, Heading, Subtitle, Button, Dialog } from 'material-bread';
+import { Divider, Heading, Subtitle, Button, Dialog, Appbar } from 'material-bread';
 import {Picker} from '@react-native-community/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from "moment";
@@ -13,6 +13,7 @@ export default class TurnosView extends React.Component {
       this.state = {
         isModalVisible: false,
         visible:false,
+        confirmBooking: false,
         selectedItemThree: 1,
         specialityValue: '',
         specialityIndex: -1,
@@ -35,10 +36,13 @@ export default class TurnosView extends React.Component {
   
     async getAllBookings() {
       try{
-        fetch("http://192.168.0.224:8080/booking/getAll" ,{
-          method: 'GET',
+        fetch("http://192.168.0.224:8080/booking/patient" ,{
+          method: 'POST',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            id: this.props.personData.id
+          })
         }).then(res => {return res.json()})
         .then(resJson => {
           var i, arr = [];
@@ -55,7 +59,7 @@ export default class TurnosView extends React.Component {
   
     async getAllSpecialities() {
       try {
-        fetch("http://192.168.0.224:8080/speciality/getAll" , {
+        fetch("http://192.168.0.224:8080/speciality" , {
           method: 'GET',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
@@ -127,9 +131,17 @@ export default class TurnosView extends React.Component {
     render() {
       return(
         <View style={{flex: 1, backgroundColor:'#F9FAFF'}}>
-          {/* <Dialog
-            visible={this.state.visible}
-            onTouchOutside={() => this.setState({ visible: false })}
+          <Appbar 
+            title={"Mis horarios"}
+            titleStyles={{color:'#FF5656', fontWeight: 'bold', textAlignVertical:'center', paddingTop:'3%'}}
+            barType={'normal'} 
+            color={"#fff"}
+            elevation={8}
+            style={{marginTop: '2%'}}
+            />
+          <Dialog
+            visible={this.state.confirmBooking}
+            onTouchOutside={() => this.setState({ confirmBooking: false })}
             title={'Desea crear su turno?'}
             supportingText={
               'El dia 3/7/2020 7:30 a 8:00 hs para la especialidad GENERAL con el medico Celada, Maria?'
@@ -137,14 +149,14 @@ export default class TurnosView extends React.Component {
             actionItems={[
               {
                 text: 'Cancel',
-                onPress: () =>  this.setState({ visible: false }),
+                onPress: () =>  this.setState({ confirmBooking: false }),
               },
               {
                 text: 'OK',
-                onPress: () =>  this.setState({ visible: false }),
+                onPress: () =>  this.setState({ confirmBooking: false }),
               },
             ]}
-          /> */}
+          />
           {/* <Dialog
           visible={this.state.visible}
           onTouchOutside={() => this.setState({ visible: false })}
@@ -279,6 +291,7 @@ export default class TurnosView extends React.Component {
                   color={'#E05858'} 
                   icon={<Icon name={'date-range'}/>}
                   type="flat"
+                  onPress={() => {this.setState({confirmBooking: true})}}
                 />
               </View>
           </Overlay>

@@ -45,6 +45,7 @@ export default class TurnoItem extends React.Component {
             })
           })
           .then(res => {
+            console.log(res.status)
             if (res.status === 200)
               this.setState({
                 status: "confirmed"
@@ -74,6 +75,7 @@ export default class TurnoItem extends React.Component {
             })
           })
           .then(res => {
+            console.log(res.status)
             if (res.status === 200)
               this.setState({
                 status: "canceled"
@@ -125,9 +127,11 @@ export default class TurnoItem extends React.Component {
                     <Button text={'Confirmar'} disabled={(this.state.status === "") ? false : true} type="outlined" textColor={'#009688'} borderSize={1} dense onPress={this.confirmBooking} />
                 </View>
             </View>
-            {/* <View style={{paddingTop: 5, marginTop: 5, width: '100%', alignItems:"center", borderTopWidth: 0.5, borderColor: '#FF5722'}}>
-              <Subtitle type={1} color={'#FF5722'} text="Cancelado por el centro medico" />
-            </View> */}
+            {((this.state.status === "canceledMedicCentre") && 
+              <View style={{paddingTop: 5, marginTop: 5, width: '100%', alignItems:"center", borderTopWidth: 0.5, borderColor: '#FF5722'}}>
+                <Subtitle type={1} color={'#FF5722'} text="Cancelado por el centro medico" />
+              </View>
+            )}
             {((this.state.status === "canceled") && 
               <View style={{paddingTop: 5, marginTop: 5, width: '100%', alignItems:"center", borderTopWidth: 0.5, borderColor: '#E05858'}}>
                 <Subtitle type={1} color={'#E05858'} text="Cancelado por el paciente" />

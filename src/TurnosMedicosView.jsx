@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ScrollView } from 'react-native';
 import { Icon, Overlay } from 'react-native-elements';
-import { Divider, Heading, Subtitle, Button, ListSection, IconButton, ListExpand, ListItem, List, Tabs, Chip } from 'material-bread';
+import { Divider, Heading, Subtitle, Button, ListSection, IconButton, ListExpand, ListItem, List, Tabs, Dialog, Appbar } from 'material-bread';
 import {Picker} from '@react-native-community/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from "moment";
@@ -13,6 +13,8 @@ export default class TurnosMedicosView extends React.Component {
       super(props);
       this.state = {
         isModalVisible: false,
+        confirmBooking: false,
+        confirmWorkHour: false,
         selectedItemThree: 1,
         specialityValue: '',
         specialityIndex: -1,
@@ -36,10 +38,13 @@ export default class TurnosMedicosView extends React.Component {
   
     async getAllBookings() {
       try{
-        fetch("localhost:8080/booking/getAll" ,{
-          method: 'GET',
+        fetch("localhost:8080/booking/medic" ,{
+          method: 'POST',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            id: this.props.personData.id
+          })
         }).then(res => {return res.json()})
         .then(resJson => {
           var i, arr = [];
@@ -56,7 +61,7 @@ export default class TurnosMedicosView extends React.Component {
   
     async getAllSpecialities() {
       try {
-        fetch("http://localhost:8080/speciality/getAll" , {
+        fetch("http://192.168.0.224:8080/speciality" , {
           method: 'GET',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
@@ -93,7 +98,7 @@ export default class TurnosMedicosView extends React.Component {
 
     async dateHttpRequest() {
       try {
-        fetch("localhost:8080/medWorkHs/getWorkHours_specDate" , {
+        fetch("http://192.168.0.224:8080/medWorkHs/getWorkHours_specDate" , {
           method: 'POST',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
@@ -129,6 +134,14 @@ export default class TurnosMedicosView extends React.Component {
         var hours = ["7:00", "7:30", "8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30", "24:00"];
         return(
             <View style={{flex: 1, backgroundColor:'#F9FAFF'}}>
+              <Appbar 
+                title={"Mis horarios"}
+                titleStyles={{color:'#fff', fontWeight: 'bold', textAlignVertical:'center', paddingTop:'3%'}}
+                barType={'normal'} 
+                color={"#00BCD4"}
+                elevation={8}
+                style={{marginTop: '2%'}}
+                />
               <Tabs
                 selectedIndex={this.state.selectedTab}
                 handleChange={index => this.setState({ selectedTab: index })}
@@ -140,8 +153,48 @@ export default class TurnosMedicosView extends React.Component {
                 ]}
               />
 
-                {/* <Overlay isVisible={this.state.isModalVisible}>
-                <View style= {{flex: 1, marginTop: 8}}>  
+              <Dialog
+                visible={this.state.confirmWorkHour}
+                onTouchOutside={() => this.setState({ confirmWorkHour: false })}
+                title={'Desea crear su horario?'}
+                supportingText={
+                  'El dia 3/7/2020 de 7:30 a 14:00 hs para la especialidad GENERAL/'
+                }
+                actionItems={[
+                  {
+                    text: 'Cancel',
+                    onPress: () =>  this.setState({ confirmWorkHour: false }),
+                  },
+                  {
+                    text: 'OK',
+                    onPress: () =>  this.setState({ confirmWorkHour: false }),
+                  },
+                ]}
+                />
+
+              <Dialog
+                visible={this.state.confirmBooking}
+                onTouchOutside={() => this.setState({ confirmBooking: false })}
+                title={'Desea eliminar el turno?'}
+                supportingText={
+                  'El dia 3/7/2020 de 7:30 a 8:00 hs para la especialidad GENERAL con el/la paciente ORTIZ, MARTIN'
+                }
+                actionItems={[
+                  {
+                    text: 'Eliminar',
+                    textColor: 'red',
+                    onPress: () =>  this.setState({ confirmBooking: false }),
+                  },
+                  {
+                    text: 'Cancelar',
+                    onPress: () =>  this.setState({ confirmWorkHour: false }),
+                  },
+                ]}
+                />
+
+                {
+                  /* <Overlay isVisible={this.state.isModalVisible}>
+                 <View style= {{flex: 1, marginTop: 8}}>  
                     <View style={{width: '100%', alignItems: 'center', borderBottomColor:'#00BCD4', paddingBottom: 8, borderBottomWidth: 0.5}}>
                     <Heading style={{color: '#00BCD4'}} type={4} text="Crear horario" />     
                     </View>
@@ -257,7 +310,7 @@ export default class TurnosMedicosView extends React.Component {
                 <Overlay isVisible={this.state.isModalVisible}>
                   <View style= {{flex: 1, marginTop: 8}}>  
                       <View style={{width: '100%', alignItems: 'center', borderBottomColor:'#00BCD4', paddingBottom: 8, borderBottomWidth: 0.5}}>
-                      <Heading style={{color: '#00BCD4'}} type={4} text="Editar horario" />     
+                        <Heading style={{color: '#00BCD4'}} type={4} text="Editar horario" />     
                       </View>
                       
                       <View style={{marginTop: 15}}>
@@ -351,11 +404,11 @@ export default class TurnosMedicosView extends React.Component {
                       <Divider/>
 
                       <View style={{flex: 1}}/>
-                      <Button 
+                      {/* <Button 
                       text={'Eliminar'} 
                       textColor={'#FF5656'} 
                       borderSize={2} 
-                      onPress={this.toggleModal}/>
+                      onPress={this.toggleModal}/> */}
                       <Button 
                       text={'Cancelar'} 
                       textColor={'#00BCD4'} 
@@ -367,6 +420,7 @@ export default class TurnosMedicosView extends React.Component {
                       icon={<Icon name={'date-range'}/>}
                       type="flat"
                       onPress={() => {
+                          this.setState({confirmWorkHour: true});
                           console.log(hours[this.state.startWorkHour] + " " + hours[this.state.finishWorkHour])}}
                       />
                   </View>
@@ -378,12 +432,12 @@ export default class TurnosMedicosView extends React.Component {
                       <ListItem
                         text={'Yanzon, Carlos Santiago'}
                         secondaryText={'8:00 - 8:30'}
-                        actionItem={<IconButton name="edit" size={24} color="#6e6e6e" />}
+                        actionItem={<IconButton name="edit" size={24} color="#6e6e6e" onPress={() => {this.setState({confirmBooking: true})}}/>}
                       />
                       <ListItem
                         text={'Celada, Maria Azul'}
                         secondaryText={'9:00 - 19:30'}
-                        actionItem={<IconButton name="edit" size={24} color="#6e6e6e" />}
+                        actionItem={<IconButton name="edit" size={24} color="#6e6e6e" onPress={() => {this.setState({confirmBooking: true})}}/>}
                       />
                       <Button
                         text={'Editar horario'}
@@ -397,7 +451,7 @@ export default class TurnosMedicosView extends React.Component {
                       <ListItem
                         text={'Perez, Juan Martin'}
                         secondaryText={'17:00 - 17:30'}
-                        actionItem={<IconButton name="edit" size={24} color="#6e6e6e" />}
+                        actionItem={<IconButton name="edit" size={24} color="#6e6e6e" onPress={() => {this.setState({confirmBooking: true})}}/>}
                       />
                       <Button
                         text={'Editar horario'}
