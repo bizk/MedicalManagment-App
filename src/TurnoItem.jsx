@@ -15,7 +15,6 @@ import {
 export default class TurnoItem extends React.Component {
     constructor(props) {
       super(props);
-      console.log("aaa", this.props.booking.status);
 
       this.state = {
         status: this.props.booking.status
@@ -25,14 +24,12 @@ export default class TurnoItem extends React.Component {
     }
 
     componentDidMount() {
-      console.log(this.props.booking.bookingId, this.props.bookingStatus, this.props.booking.status);
       this.setState({
         status: this.props.booking.status
       })
     }
 
     async confirmBooking() {
-      console.log(this.props.booking.bookingId);
       try {
         fetch("http://192.168.0.224:8080/booking/confirmBooking", {
             method: 'PUT',

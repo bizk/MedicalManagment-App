@@ -16,18 +16,28 @@ export default class TurnosView extends React.Component {
         confirmBooking: false,
         selectedItemThree: 1,
         specialityValue: '',
-        specialityIndex: -1,
-        language: 'java',
-        showDatePicker: false,
         bookings: [],
-        bookingDateMedic: [],
-        bookingDateMedicValue: 0,
+  
         specialities: [],
-        date: new Date(),
+
+        selectedDay_id: 0,
+        selectedDay_value: '',
+        dates: [],
+
+        selectedMedic_value: 0,
+        availableMedics: [],
+
+        selectedBooking: '',
+        availableHours: [],
+        
+        createBookingButton: true
       }
 
+      this.getDates_bySpec = this.getDates_bySpec.bind(this);
+      this.getMedics_byDateAndSpec = this.getMedics_byDateAndSpec.bind(this);
+      this.getHours_byData = this.getHours_byData.bind(this);
       this.toggleModal = this.toggleModal.bind(this);
-      this.toggleDatePicker = this.toggleDatePicker.bind(this);
+
     }
     
     toggleModal() {
@@ -51,12 +61,17 @@ export default class TurnosView extends React.Component {
           };
           this.setState({bookings: arr});
         })
-        .catch(e => console.log(e));
+        .catch(e => console.log("GetAllBookings",e));
       } catch (e) {
-        console.log(e) 
+        console.log("GetAllBookings",e) 
       }
     }
-  
+
+    componentDidMount() {
+      this.getAllBookings();
+      this.getAllSpecialities();
+    }
+
     async getAllSpecialities() {
       try {
         fetch("http://192.168.0.224:8080/speciality" , {
@@ -71,6 +86,10 @@ export default class TurnosView extends React.Component {
             arr.push(resJson[i]);
           };
           this.setState({specialities: arr});
+          if (arr.length > 0) {
+            this.setState({specialityValue: arr[0].specialityId, specialitySelected: 0, selectedBooking: ''})
+            this.getDates_bySpec();
+          };
         }).catch(e => {
           console.log("getAllSpecialities FETCH ERROR");
           console.log(e);          
@@ -81,32 +100,52 @@ export default class TurnosView extends React.Component {
       }
     }
 
-    componentDidMount() {
-      this.getAllBookings();
-      this.getAllSpecialities();
+    async getDates_bySpec() {
+      if (this.state.specialityValue != ``) {
+        try {
+          fetch("http://192.168.0.224:8080/booking/getDays" , {
+            method: 'POST',
+            mode: "cors",
+            headers:{ 'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              specialityId: this.state.specialityValue
+            })
+          })
+          .then(res => {  
+            return res.json()
+          })
+          .then(resJson => {
+            var i, arr = [];
+            for (i = 0; i < resJson.length; i++) {
+              arr.push(resJson[i]);
+            };
+            this.setState({dates: arr});
+            if (arr.length > 0) {
+              this.setState({selectedDay_value: arr[0].day}, this.getMedics_byDateAndSpec)
+            } else {
+              this.setState({selectedDay_value: ''})
+            }
+          })
+          .catch(e => console.log(e));
+        } catch (e) {
+          console.log(e) 
+        }
+      } 
     }
 
-    setStartDate(date) {
-      this.setState({date: date})
-    }
-
-    toggleDatePicker() {
-      this.setState({showDatePicker: !this.state.showDatePicker});
-    }
-
-    async dateHttpRequest() {
-      try {
-        fetch("http://192.168.0.224:8080/medWorkHs/getWorkHours_specDate" , {
+    async getMedics_byDateAndSpec() {
+      if (this.state.specialityValue != '' && this.state.selectedDay_value != ``) {
+        try {
+        fetch("http://192.168.0.224:8080/booking/getMedics" , {
           method: 'POST',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
           body: JSON.stringify({
-            date: moment(this.state.date).format('YYYY-MM-DD'),
-            speciality: this.state.specialityValue
+            specialityId: this.state.specialityValue,
+            day: this.state.selectedDay_value
           })
         })
         .then(res => {  
-          console.log("getWorkHours_specDate",res.status)
           return res.json()
         })
         .then(resJson => {
@@ -114,18 +153,83 @@ export default class TurnosView extends React.Component {
           for (i = 0; i < resJson.length; i++) {
             arr.push(resJson[i]);
           };
-          this.setState({bookingDateMedic: arr});
-          console.log(this.state.bookingDateMedic.length);
+          this.setState({availableMedics: arr});
+          if (arr.length > 0) {
+            this.setState({selectedMedic_value: arr[0].medic.id, selectedBooking: ''}, this.getHours_byData)
+          } else {
+            this.setState({selectedMedic_value: ''})
+          }
         })
         .catch(e => console.log(e));
       } catch (e) {
         console.log(e) 
       }
+      }
     }
 
-    selectDateHttpRequest(selectedDate) {
-      this.setState({date: selectedDate, showDatePicker: false})
-      this.dateHttpRequest();
+    async getHours_byData() {
+      if (this.state.specialityValue != '' && this.state.selectedDay_value != `` && this.state.selectedMedic_value != ``) {
+        try {
+          fetch("http://192.168.0.224:8080/booking/getHours" , {
+            method: 'POST',
+            mode: "cors",
+            headers:{ 'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              specialityId: this.state.specialityValue,
+              day: this.state.selectedDay_value,
+              medicId: this.state.selectedMedic_value
+            })
+          })
+          .then(res => {  
+            return res.json()
+          })
+          .then(resJson => {
+            var i, arr = [];
+            for (i = 0; i < resJson.length; i++) {
+              arr.push(resJson[i]);
+            };
+            this.setState({availableHours: arr});
+            if (arr.length > 0) {
+              this.setState({selectedBooking: arr[0].bookingId, createBookingButton: false})
+            } else {
+              this.setState({selectedBooking: '', createBookingButton: true})
+            }
+          })
+          .catch(e => console.log(e));
+        } catch (e) {
+          console.log(e) 
+        }
+      } else {
+        this.setState({selectedBooking: '', createBookingButton: true})
+      }
+    }
+
+    async postBooking() {
+      if (this.state.specialityValue != '' && this.state.selectedDay_value != `` && this.state.selectedMedic_value != `` && this.state.selectedBooking != ``) {
+        try {
+          fetch("http://192.168.0.224:8080/booking" , {
+            method: 'POST',
+            mode: "cors",
+            headers:{ 'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              id: this.props.personData.id,
+              bookingId: this.state.selectedBooking
+            })
+          })
+          .then(res => {  
+            if (res.status == 200) {
+              console.log("alooo");
+              this.getAllBookings();
+              this.setState({specialityValue:'',selectedDay_value: ``,selectedMedic_value: ``, selectedBooking: ``});      
+            }
+          })
+          .catch(e => console.log(e));
+        } catch (e) {
+          console.log(e) 
+        }
+      } else {
+        this.setState({selectedBooking: '', createBookingButton: true})
+      }
     }
 
     render() {
@@ -144,7 +248,7 @@ export default class TurnosView extends React.Component {
             onTouchOutside={() => this.setState({ confirmBooking: false })}
             title={'Desea crear su turno?'}
             supportingText={
-              'El dia 3/7/2020 7:30 a 8:00 hs para la especialidad GENERAL con el medico Celada, Maria?'
+              'El dia '+ this.state.day +' ' + this.state.selectedBooking +' hs para la especialidad GENERAL con el medico Celada, Maria?'
             }
             actionItems={[
               {
@@ -153,7 +257,9 @@ export default class TurnosView extends React.Component {
               },
               {
                 text: 'OK',
-                onPress: () =>  this.setState({ confirmBooking: false }),
+                onPress: () =>  {
+                  this.setState({ confirmBooking: false, isModalVisible: false}, this.postBooking);
+                },
               },
             ]}
           />
@@ -202,7 +308,9 @@ export default class TurnosView extends React.Component {
                     <Picker   
                     selectedValue={this.state.specialityValue}
                     mode={'dropdown'}
-                    onValueChange={(itemValue, itemIndex) => this.setState({specialityValue: itemValue, specialitySelected: itemIndex}) }>
+                    onValueChange={(itemValue, itemIndex) => {
+                      this.setState({specialityValue: itemValue, specialitySelected: itemIndex, selectedDay_value: '', selectedMedic_value: ''}, this.getDates_bySpec)
+                    }}>
                       {
                         this.state.specialities.map(speciality => {
                           if ( speciality !== undefined) {
@@ -217,42 +325,38 @@ export default class TurnosView extends React.Component {
                 
                 <View>
                   <Subtitle style={{marginBottom: 5}} type={1} text="Fecha:" />
-                  <Button 
-                    text={moment(this.state.date).format('YYYY-MM-DD').toString()} 
-                    borderSize={1} 
-                    textColor={'#E05858'} 
-                    type="outlined" 
-                    icon={<Icon name="date-range" />} 
-                    onPress={this.toggleDatePicker} />
-                    {this.state.showDatePicker && (
-                      <DateTimePicker testID="dateTimePicker"
-                        timeZoneOffsetInMinutes={0}
-                        value={this.state.date}
-                        mode={"date"}
-                        is24Hour={true}
-                        display="default"
-                        maximumDate={moment().add(2, 'month').toDate()}
-                        minimumDate={moment().add(1,'day').toDate()}
-                        style={{backgroundColor:'red'}}
-                        onChange={(event, selectedDate) => { this.selectDateHttpRequest(selectedDate) }} 
-                      />
-                    )
-                  }
+                  <View style={{borderBottomWidth: 0.5}}>
+                    <Picker   
+                    selectedValue={this.state.selectedDay_value}
+                    mode={'dropdown'}
+                    onValueChange={(itemValue, itemIndex) => {
+                      this.setState({selectedDay_value: itemValue, selectedDay_id: itemIndex, selectedMedic_value: ''}, this.getMedics_byDateAndSpec)
+                      }}>
+                      {
+                        this.state.dates.map(day => {
+                          if ( day !== undefined) {
+                            return <Picker.Item key={day.day} label={day.day} value={day.day}/> 
+                          }
+                        })
+                      }
+                    </Picker> 
+                  </View>  
                   <Divider/>
                 </View>    
                 <View>
                   <Subtitle type={1} text="Medico" />     
                   <View style={{borderBottomWidth: 0.5, }}>
                     <Picker   
-                    selectedValue={this.state.bookingDateMedicValue}
+                    selectedValue={this.state.selectedMedic_value}
                     mode={'dropdown'}
-                    onValueChange={(itemValue, itemIndex) =>
-                      this.setState({bookingDateMedicValue: itemValue})
-                    }>
-                      { (this.state.bookingDateMedic.length > 0) && (
-                        this.state.bookingDateMedic.map(medics => {
+                    onValueChange={(itemValue, itemIndex) =>{
+                      this.setState({selectedMedic_value: itemValue});
+                      this.getHours_byData();
+                    }}>
+                      { (this.state.availableMedics.length > 0) && (
+                        this.state.availableMedics.map(medics => {
                           if ( medics !== undefined) {
-                            return <Picker.Item key={medics.id} label={medics.person.sureName + " " + medics.person.name} value={medics.person}/> 
+                            return <Picker.Item key={medics.medic.id} label={medics.medic.sureName + " " + medics.medic.name} value={medics.medic.id}/> 
                           } 
                         })
                       ) 
@@ -266,15 +370,21 @@ export default class TurnosView extends React.Component {
                   <Subtitle type={1} text="Turno" />         
                   <View style={{borderBottomWidth: 0.5,}}>
                     <Picker   
-                    selectedValue={this.state.language}
+                    selectedValue={this.state.selectedBooking}
                     style={{height: 50, width: '100%'}}
                     mode={'dropdown'}
                     onValueChange={(itemValue, itemIndex) =>
-                      this.setState({language: itemValue})
+                      this.setState({selectedBooking: itemValue})
                     }
                     >
-                      <Picker.Item label="7:00 - 7:30" value="java" />
-                      <Picker.Item label="7:30 - 8:00" value="js" />
+                      { (this.state.availableHours.length > 0) && (
+                        this.state.availableHours.map(hs => {
+                          if ( hs !== undefined) {
+                            return <Picker.Item key={hs.bookingId} label={hs.time_start} value={hs.bookingId}/> 
+                          } 
+                        })
+                      ) 
+                      }
                     </Picker>
                   </View>
                   <Divider/>
@@ -291,6 +401,7 @@ export default class TurnosView extends React.Component {
                   color={'#E05858'} 
                   icon={<Icon name={'date-range'}/>}
                   type="flat"
+                  disabled={this.state.createBookingButton}
                   onPress={() => {this.setState({confirmBooking: true})}}
                 />
               </View>

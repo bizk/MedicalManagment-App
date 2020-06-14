@@ -7,7 +7,7 @@ export default class LoginView extends React.Component {
         super(props);
         this.state = {
             loginMessageError: false,
-            userInput: "medico_1",
+            userInput: "paciente_1",
             userSecret: "abc123"
         }
         
