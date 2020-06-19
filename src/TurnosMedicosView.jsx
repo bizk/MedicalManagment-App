@@ -4,9 +4,9 @@ import { Icon, Overlay } from 'react-native-elements';
 import { Divider, Heading, Subtitle, Button, ListSection, IconButton, ListExpand, ListItem, List, Tabs, Dialog, Appbar } from 'material-bread';
 import {Picker} from '@react-native-community/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import moment from "moment";
+import moment, { parseZone } from "moment";
 import TurnoItem from './TurnoItem';
-
+import WorkingHourItem from './WorkingHourItem';
 export default class TurnosMedicosView extends React.Component {
     
     constructor(props) {
@@ -26,6 +26,8 @@ export default class TurnosMedicosView extends React.Component {
         finishWorkHour: 1,
         specialities: [],
         date: new Date(),
+
+        workingHoursAndBookings: [],
       }
 
       this.toggleModal = this.toggleModal.bind(this);
@@ -35,28 +37,25 @@ export default class TurnosMedicosView extends React.Component {
     toggleModal() {
       this.setState({isModalVisible: !this.state.isModalVisible})
     };
-  
-    async getAllBookings() {
-      try{
-        fetch("localhost:8080/booking/medic" ,{
+
+    async getWorkingHoursAndBookings() {
+      try {
+        fetch("http://192.168.0.224:8080/medWorkHs/getWorkHours" ,{
           method: 'POST',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
           body: JSON.stringify({
-            id: this.props.personData.id
+            medicId: this.props.personData.id
           })
         }).then(res => {return res.json()})
         .then(resJson => {
-          var i, arr = [];
-          for (i = 0; i < resJson.length; i++) {
-            arr.push(resJson[i]);
-          };
-          this.setState({bookings: arr});
+          let workHours = [];
+          resJson.forEach(wkData => workHours.push(wkData));
+          workHours.sort((a, b) => (a.time_start).localCompare(b.time_start));
+          this.setState({workingHoursAndBookings: workHours});
         })
         .catch(e => console.log(e));
-      } catch (e) {
-        console.log(e) 
-      }
+      } catch (e) { console.log(e) }
     }
   
     async getAllSpecialities() {
@@ -84,7 +83,7 @@ export default class TurnosMedicosView extends React.Component {
     }
 
     componentDidMount() {
-      this.getAllBookings();
+      this.getWorkingHoursAndBookings();
       this.getAllSpecialities();
     }
 
@@ -427,45 +426,20 @@ export default class TurnosMedicosView extends React.Component {
                 </Overlay>
                 
                 <View style={{flex: 1, margin: 10}}>
-                  <List style={{ width: `100%` }}>
-                    <ListSection label={'OFTALMOLOGIA - 7:00 a 12:30'}>                           
-                      <ListItem
-                        text={'Yanzon, Carlos Santiago'}
-                        secondaryText={'8:00 - 8:30'}
-                        actionItem={<IconButton name="edit" size={24} color="#6e6e6e" onPress={() => {this.setState({confirmBooking: true})}}/>}
-                      />
-                      <ListItem
-                        text={'Celada, Maria Azul'}
-                        secondaryText={'9:00 - 19:30'}
-                        actionItem={<IconButton name="edit" size={24} color="#6e6e6e" onPress={() => {this.setState({confirmBooking: true})}}/>}
-                      />
-                      <Button
-                        text={'Editar horario'}
-                        style={{width:`100%`}}
-                        type="outlined"
-                        radius={20}
-                        onPress={this.toggleModal}
-                      />
-                    </ListSection>
-                    <ListSection label={'PEDIATRIA - 15:30 a 20:30'}>                           
-                      <ListItem
-                        text={'Perez, Juan Martin'}
-                        secondaryText={'17:00 - 17:30'}
-                        actionItem={<IconButton name="edit" size={24} color="#6e6e6e" onPress={() => {this.setState({confirmBooking: true})}}/>}
-                      />
-                      <Button
-                        text={'Editar horario'}
-                        style={{width:`100%`}}
-                        type="outlined"
-                        radius={20}
-                        onPress={this.toggleModal}
-                      />
-                    </ListSection>
-                  </List>           
+                  <ScrollView style={{ width: `100%` }}>
+                    {
+                      this.state.workingHoursAndBookings.map(wk =>{
+                        if (wk === undefined || wk.bookings === []) return ;
+                        else {
+                          return <WorkingHourItem key={wk.id} workHour={wk}/>
+                        }
+                      })
+                    }                  
+                  </ScrollView>           
                 </View>
 
-                <View style={{flex: 1, alignItems: 'center'}}>
-                    <ScrollView style={{marginTop: 12}}>
+                <View style={{ alignItems: 'center'}}>
+                    {/* <ScrollView style={{marginTop: 12}}>
                     {this.state.bookings.map((booking) => {
                         if ( booking === undefined) {
                         return ""
@@ -473,7 +447,7 @@ export default class TurnosMedicosView extends React.Component {
                         return <TurnoItem key={booking.bookingId} booking={booking}/> 
                         }
                     })}
-                    </ScrollView>
+                    </ScrollView> */}
                     <View style={{
                         position:'absolute',
                         bottom:0,
