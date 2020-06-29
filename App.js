@@ -35,20 +35,26 @@ class MainScreen extends React.Component {
   }
 
   loginStatus(data) {
-    // console.log(data)
-    // console.log(data.role.role);
     this.setState({
       loginStatus: "200",
       person: data
     })
   }
 
+  leaveSession() {
+    this.setState({
+      loginStatus: "",
+      person: undefined
+    })
+  }
+
   render(){
     var loginStatus = this.loginStatus;
+    var leaveSession = this.leaveSession;
     return(
       <View style={{flex: 1}}>
         {
-          (this.state.loginStatus === "200") ? <HomeScreen personData={this.state.person}/> : <LoginView loginStatus={loginStatus.bind(this)}/>
+          (this.state.loginStatus === "200") ? <HomeScreen personData={this.state.person} leaveSession={leaveSession.bind(this)}/> : <LoginView loginStatus={loginStatus.bind(this)}/>
         }
       </View>
     )
@@ -63,15 +69,14 @@ class HomeScreen extends React.Component {
     }
   }
 
-
   render() {
     return(
       <View style={{ flex: 1}}>
           {
-            (this.props.personData.role.role === "medic") && <TurnosMedicosView personData={this.props.personData}/> 
+            (this.props.personData.role.role === "medic") && <TurnosMedicosView personData={this.props.personData} leaveSession={this.props.leaveSession}/> 
           }
           {
-            (this.props.personData.role.role === "patient") && <TurnosView personData={this.props.personData}/>
+            (this.props.personData.role.role === "patient") && <TurnosView personData={this.props.personData} leaveSession={this.props.leaveSession}/>
           }
       </View>
     )

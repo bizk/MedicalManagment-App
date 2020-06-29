@@ -1,10 +1,8 @@
 import React from 'react';
 import { View, ScrollView } from 'react-native';
 import { Icon, Overlay } from 'react-native-elements';
-import { Divider, Heading, Subtitle, Button, Dialog, Appbar } from 'material-bread';
+import { Divider, Heading, Subtitle, Button, Dialog, Appbar, ProgressCircle , IconButton } from 'material-bread';
 import {Picker} from '@react-native-community/picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import moment from "moment";
 import TurnoItem from './TurnoItem';
 
 export default class TurnosView extends React.Component {
@@ -30,7 +28,11 @@ export default class TurnosView extends React.Component {
         selectedBooking: '',
         availableHours: [],
         
-        createBookingButton: true
+        createBookingButton: true,
+
+        exitDialog: false,
+      
+        isInProgress: false,
       }
 
       this.getDates_bySpec = this.getDates_bySpec.bind(this);
@@ -103,6 +105,7 @@ export default class TurnosView extends React.Component {
     async getDates_bySpec() {
       if (this.state.specialityValue != ``) {
         try {
+          this.setState({isInProgress: true})
           fetch("http://192.168.0.224:8080/booking/getDays" , {
             method: 'POST',
             mode: "cors",
@@ -123,11 +126,15 @@ export default class TurnosView extends React.Component {
             if (arr.length > 0) {
               this.setState({selectedDay_value: arr[0].day}, this.getMedics_byDateAndSpec)
             } else {
-              this.setState({selectedDay_value: ''})
+              this.setState({selectedDay_value: '', isInProgress: false})
             }
           })
-          .catch(e => console.log(e));
+          .catch(e => {
+            console.log(e)
+            this.setState({isInProgress: false})  
+          });
         } catch (e) {
+          this.setState({isInProgress: false})
           console.log(e) 
         }
       } 
@@ -157,12 +164,16 @@ export default class TurnosView extends React.Component {
           if (arr.length > 0) {
             this.setState({selectedMedic_value: arr[0].medic.id, selectedBooking: ''}, this.getHours_byData)
           } else {
-            this.setState({selectedMedic_value: ''})
+            this.setState({selectedMedic_value: '', isInProgress: false})
           }
         })
-        .catch(e => console.log(e));
+        .catch(e => {
+          this.setState({isInProgress: false})
+          console.log(e)
+        });
       } catch (e) {
         console.log(e) 
+        this.setState({isInProgress: false})
       }
       }
     }
@@ -190,17 +201,21 @@ export default class TurnosView extends React.Component {
             };
             this.setState({availableHours: arr});
             if (arr.length > 0) {
-              this.setState({selectedBooking: arr[0].bookingId, createBookingButton: false})
+              this.setState({selectedBooking: arr[0].bookingId, createBookingButton: false, isInProgress: false})
             } else {
-              this.setState({selectedBooking: '', createBookingButton: true})
+              this.setState({selectedBooking: '', createBookingButton: true, isInProgress: false})
             }
           })
-          .catch(e => console.log(e));
+          .catch(e => {
+            this.setState({selectedBooking: '', createBookingButton: true, isInProgress: false})
+            console.log(e)
+          });
         } catch (e) {
+          this.setState({selectedBooking: '', createBookingButton: true, isInProgress: false})
           console.log(e) 
         }
       } else {
-        this.setState({selectedBooking: '', createBookingButton: true})
+        this.setState({selectedBooking: '', createBookingButton: true, isInProgress: false})
       }
     }
 
@@ -218,11 +233,10 @@ export default class TurnosView extends React.Component {
           })
           .then(res => {  
             if (res.status == 200) {
-              console.log("alooo");
               this.getAllBookings();
-              this.setState({specialityValue:'',selectedDay_value: ``,selectedMedic_value: ``, selectedBooking: ``});      
+              this.setState({specialityValue:'',selectedDay_value: ``,selectedMedic_value: ``, selectedBooking: ``, isModalVisible: false});      
             }
-          })
+          }).then(() => this.getAllBookings())
           .catch(e => console.log(e));
         } catch (e) {
           console.log(e) 
@@ -237,72 +251,62 @@ export default class TurnosView extends React.Component {
         <View style={{flex: 1, backgroundColor:'#F9FAFF'}}>
           <Appbar 
             title={"Mis horarios"}
-            titleStyles={{color:'#FF5656', fontWeight: 'bold', textAlignVertical:'center', paddingTop:'3%'}}
-            barType={'normal'} 
+            style={{paddingTop: 30, height: 70}}
+            titleStyles={{color:'#FF5656', fontWeight: 'bold', textAlignVertical:'center', marginTop: '4%'}}
+            barType={'dense'} 
             color={"#fff"}
             elevation={8}
-            style={{marginTop: '2%'}}
-            />
+            actionItems={[
+              <IconButton key={0} name="directions-walk" size={24} color={'#FF5656'} onPress={() => this.setState({exitDialog: true})} />
+            ]}
+          />
+          <Dialog
+            visible={this.state.exitDialog}
+            onTouchOutside={() => this.setState({ exitDialog: false })}
+            title={'Desea cerrar sesion?'}
+            actionItems={[
+              {
+                text: 'Cancelar',
+                onPress: () =>  this.setState({ exitDialog: false }),
+              },
+              {
+                text: 'SI',
+                onPress: () => {this.setState({ exitDialog: false}, this.props.leaveSession)},
+              },
+            ]}/>
+          
           <Dialog
             visible={this.state.confirmBooking}
             onTouchOutside={() => this.setState({ confirmBooking: false })}
-            title={'Desea crear su turno?'}
+            title={'Desea crear el turno?'}
             supportingText={
-              'El dia '+ this.state.day +' ' + this.state.selectedBooking +' hs para la especialidad GENERAL con el medico Celada, Maria?'
+                  'El dia '+ this.props.selectedDay_value +' de 7:30 a 14:00 hs para la especialidad GENERAL/'
             }
             actionItems={[
               {
-                text: 'Cancel',
+                text: 'Cancelar',
                 onPress: () =>  this.setState({ confirmBooking: false }),
               },
               {
-                text: 'OK',
-                onPress: () =>  {
-                  this.setState({ confirmBooking: false, isModalVisible: false}, this.postBooking);
-                },
+                text: 'SI',
+                onPress: () => {this.setState({ confirmBooking: false}, this.postBooking)},
               },
-            ]}
-          />
-          {/* <Dialog
-          visible={this.state.visible}
-          onTouchOutside={() => this.setState({ visible: false })}
-          title={'Desea confirmar turno?'}
-          actionItems={[
-            {
-              text: 'Cancelar',
-              onPress: () =>  this.setState({ visible: false }),
-            },
-            {
-              text: 'OK',
-              onPress: () =>  this.setState({ visible: false }),
-            },
-          ]}
-          /> */}
-          {/* <Dialog
-          visible={this.state.visible}
-          onTouchOutside={() => this.setState({ visible: false })}
-          title={'Desea Cancelar turno?'}
-          supportingText={
-              'Si cancela el turno antes de las 12 hs de este sufrira recargos'
-            }
-          actionItems={[
-            {
-              text: 'Cancelar',
-              onPress: () =>  this.setState({ visible: false }),
-            },
-            {
-              text: 'Confirmar',
-              onPress: () =>  this.setState({ visible: false }),
-            },
-          ]}
-          /> */}
+            ]}/>
+
           <Overlay isVisible={this.state.isModalVisible}>
-              <View style= {{flex: 1, marginTop: 8}}>  
-                <View style={{width: '100%', alignItems: 'center', borderBottomColor:'#E05858', paddingBottom: 8, borderBottomWidth: 0.5}}>
-                  <Heading style={{color: '#E05858'}} type={4} text="Crear turno" />     
+            <View style= {{flex: 1, marginTop: 8}}>  
+              {(
+                this.state.isInProgress &&
+                <View style={{width:"100%", height:"100%", zIndex: 1, position: "absolute", backgroundColor:"rgba(255,255,255,0.6)", justifyContent:'center', alignItems:'center'}}>
+                  <ProgressCircle color={"#E05858"}/>
                 </View>
+              )}
+              
+              <View style={{width: '100%', alignItems: 'center', borderBottomColor:'#E05858', paddingBottom: 8, borderBottomWidth: 0.5}}>
+                <Heading style={{color: '#E05858'}} type={4} text="Crear turno" />     
+              </View>
                 
-                <View style={{marginTop: 15}}>
+              <View style={{marginTop: 15}}>
                   <Subtitle type={1} text="Especialidad" />
                   <View style={{borderBottomWidth: 0.5}}>
                     <Picker   
@@ -407,7 +411,7 @@ export default class TurnosView extends React.Component {
               </View>
           </Overlay>
 
-          <View style={{flex: 1, alignItems: 'center'}}>
+          <View style={{flex: 1, alignItems: 'center', paddingBottom: 50}}>
             <ScrollView style={{marginTop: 12}}>
               {this.state.bookings.map((booking) => {
                 if ( booking === undefined) {
@@ -417,6 +421,7 @@ export default class TurnosView extends React.Component {
                 }
               })}
             </ScrollView>
+            <View style={{martinTop: 50}}/>
             <View style={{
               position:'absolute',
               bottom:0,

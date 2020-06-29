@@ -24,7 +24,7 @@ export default class WorkingHourItem extends React.Component {
         if (booking.status === "") this.setState({modalBookingTest: "LIBRE - Dia: " + booking.day + " - " + booking.time_start +
             " a " + booking.time_end})
         else this.setState({modalBookingTest: "Dia: " + booking.day + " - " + booking.time_start +
-        " a " + booking.time_end + " Paciente " + booking.patient.sureName + ', ' + booking.patient.name})
+            " a " + booking.time_end + " Paciente " + booking.patient.sureName + ', ' + booking.patient.name})
     }
 
     async cancelBooking() {
@@ -37,10 +37,13 @@ export default class WorkingHourItem extends React.Component {
                   body: JSON.stringify({
                       bookingId: this.state.selectedBooking
                   })
-                }).then(res => {
-                  console.log(res.status)  
-                  return res.json()})
-                .catch(e => console.log(e));
+                })
+                .then(res => {
+                    if (res === 200) 
+                    this.props.workHour.bookings.find(booking => booking.bookingId === this.state.selectedBooking).status = "canceledMedicCentre";
+                    return res.json()})
+                .then(r => console.log(r))
+                    .catch(e => console.log(e));
               } catch (e) { console.log(e) }
         }
       }
@@ -63,28 +66,26 @@ export default class WorkingHourItem extends React.Component {
                         }]}
                 />
                 <ListSection 
-                    label={this.props.workHour.speciality.type + ' - ' + this.props.workHour.startHour + " a " + this.props.workHour.finishHour + ' - ' + moment(this.props.workHour.day).format("DD / MM")}
-                    color="#000" topDivider={true}
-                >                           
+                    label={moment(this.props.workHour.day).format("DD / MM") + ' - ' + this.props.workHour.startHour + " a " + this.props.workHour.finishHour}
+                    color="#000" topDivider={true} >                           
                     {
                         this.props.workHour.bookings.map(booking => {
                             if (booking === undefined) ;
                             else {
-                                if (booking.patientId === null)
+                                if (booking.patientId === null && booking.status === "")
                                     return <ListItem key={booking.bookingId} 
                                         text={'Libre'}
                                         secondaryText={booking.time_start + ' - ' + booking.time_end}
                                         disabled={this.state.isInThisWeek}
                                         actionItem={(!this.state.isInThisWeek && <IconButton name="cancel" size={24} disabled={false} color="#6e6e6e" onPress={() => this.cancelBookingModal(booking)}/>)}
                                     />
-                                else if (booking.status === "canceledMedicCentre") 
+                                else if (booking.status === "canceledMedicCentre") {
                                     return <ListItem key={booking.bookingId} 
                                         text={'CANCELADO'}
-                                        style={{backgroundColor: "#EBEBEB"}}
                                         secondaryText={booking.time_start + ' - ' + booking.time_end}
                                         disabled={true}
-                                        actionItem={(!this.state.isInThisWeek && <IconButton name="cancel" size={24} disabled={true} color="#6e6e6e" onPress={() => this.cancelBookingModal(booking)}/>)}
                                     />
+                                }
                                 else 
                                     return <ListItem key={booking.bookingId}
                                         text={booking.patient.sureName + ', ' + booking.patient.name}
@@ -94,13 +95,6 @@ export default class WorkingHourItem extends React.Component {
                             }
                         })               
                     }
-                    
-                    <Button text={'Editar horario'}
-                        style={{width:`100%`}}
-                        type="outlined"
-                        radius={20}
-                        onPress={this.toggleModal} 
-                    />
                 </ListSection>
             </View>
         );

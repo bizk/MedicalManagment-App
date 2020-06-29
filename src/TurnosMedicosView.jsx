@@ -5,7 +5,6 @@ import { Divider, Heading, Subtitle, Button, ListSection, IconButton, ListExpand
 import {Picker} from '@react-native-community/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from "moment";
-import TurnoItem from './TurnoItem';
 import WorkingHourItem from './WorkingHourItem';
 export default class TurnosMedicosView extends React.Component {
     
@@ -15,13 +14,13 @@ export default class TurnosMedicosView extends React.Component {
       this.state = {
         isModalVisible: false,
         confirmWorkHour: false,
-        specialityValue: '',
         showDatePicker: false,
-        bookings: [],
         bookingDateMedic: [],
        
         specialities: [],
-        date: new Date(),
+        specialityValue: '',
+        specialityType: "",
+        date: moment().add(1,'day').toDate(),
 
         startWorkHour: 0,
         hour_startWorkHour: "7:30",
@@ -29,6 +28,7 @@ export default class TurnosMedicosView extends React.Component {
         hour_finishWorkHour: "8:00",
 
         workingHoursAndBookings: [],
+        exitDialog: false,
       }
 
       this.createWorkHour = this.createWorkHour.bind(this);
@@ -62,10 +62,13 @@ export default class TurnosMedicosView extends React.Component {
   
     async getAllSpecialities() {
       try {
-        fetch("http://192.168.0.224:8080/speciality" , {
-          method: 'GET',
+        fetch("http://192.168.0.224:8080/speciality/medics" ,{
+          method: 'POST',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            medicId: this.props.personData.id
+          })
         })
         .then(res => {return res.json()})
         .then(resJson => {
@@ -73,8 +76,9 @@ export default class TurnosMedicosView extends React.Component {
           for (i = 0; i < resJson.length; i++) {
             arr.push(resJson[i]);
           };
-          this.setState({specialities: arr, specialityValue: arr[0].specialityId});
-        }).catch(e => {
+          this.setState({specialities: arr, specialityValue: arr[0].specialityId, specialityValue: arr[0].type});
+        })
+        .catch(e => {
           console.log("getAllSpecialities FETCH ERROR");
           console.log(e);          
         })
@@ -87,10 +91,6 @@ export default class TurnosMedicosView extends React.Component {
     componentDidMount() {
       this.getWorkingHoursAndBookings();
       this.getAllSpecialities();
-    }
-
-    setStartDate(date) {
-      this.setState({date: date})
     }
 
     toggleDatePicker() {
@@ -132,9 +132,7 @@ export default class TurnosMedicosView extends React.Component {
     }
 
     async createWorkHour() {
-      
       try {
-        console.log(this.props.personData.id, moment(this.state.date).format('MM-DD-YYYY'), this.state.hour_startWorkHour, this.state.hour_finishWorkHour, this.state.specialityValue)
         fetch("http://192.168.0.224:8080/medWorkHs" , {
           method: 'POST',
           mode: "cors",
@@ -151,7 +149,6 @@ export default class TurnosMedicosView extends React.Component {
           return res.json()
         })
         .then(resJson => {
-          console.log("resJson", resJson);
           this.getWorkingHoursAndBookings();
           this.toggleModal();
         })
@@ -171,7 +168,10 @@ export default class TurnosMedicosView extends React.Component {
                 barType={'normal'} 
                 color={"#00BCD4"}
                 elevation={8}
-                style={{marginTop: '2%'}}
+                style={{paddingTop: 30, height: 70}}
+                actionItems={[
+                  <IconButton key={0} name="directions-walk" size={24} color={'#F9FAFF'} onPress={() => this.setState({exitDialog: true})} />
+                ]}
                 />
               <Tabs
                 selectedIndex={this.state.selectedTab}
@@ -184,12 +184,27 @@ export default class TurnosMedicosView extends React.Component {
                 ]}
               />
 
-<Dialog
+              <Dialog
+                visible={this.state.exitDialog}
+                onTouchOutside={() => this.setState({ exitDialog: false })}
+                title={'Desea cerrar sesion?'}
+                actionItems={[
+                  {
+                    text: 'Cancelar',
+                    onPress: () =>  this.setState({ exitDialog: false }),
+                  },
+                  {
+                    text: 'SI',
+                    onPress: () => {this.setState({ exitDialog: false}, this.props.leaveSession)},
+                  },
+                ]}/>
+
+              <Dialog
                 visible={this.state.confirmWorkHour}
                 onTouchOutside={() => this.setState({ confirmWorkHour: false })}
                 title={'Desea crear su horario?'}
                 supportingText={
-                  'El dia 3/7/2020 de 7:30 a 14:00 hs para la especialidad GENERAL/'
+                  'El dia ' + moment(this.state.date).format('MM-DD-YYYY') + ' de ' + this.state.hour_startWorkHour + ' a '+this.state.hour_finishWorkHour+' hs para la especialidad '
                 }
                 actionItems={[
                   {
@@ -206,125 +221,10 @@ export default class TurnosMedicosView extends React.Component {
                 ]}
                 />
 
-                {
-                  /* <Overlay isVisible={this.state.isModalVisible}>
-                 <View style= {{flex: 1, marginTop: 8}}>  
-                    <View style={{width: '100%', alignItems: 'center', borderBottomColor:'#00BCD4', paddingBottom: 8, borderBottomWidth: 0.5}}>
-                    <Heading style={{color: '#00BCD4'}} type={4} text="Crear horario" />     
-                    </View>
-                    
-                    <View style={{marginTop: 15}}>
-                        <Subtitle type={1} text="Especialidad" />
-                        <View style={{borderBottomWidth: 0.5, backgroundColor:'#f0f0f0'}}>
-                            <Picker   
-                            selectedValue={this.state.specialityValue}
-                            mode={'dropdown'}
-                            onValueChange={(itemValue, itemIndex) => this.setState({specialityValue: itemValue, specialitySelected: itemIndex}) }>
-                            {
-                                this.state.specialities.map(speciality => {
-                                if ( speciality !== undefined) {
-                                    return <Picker.Item key={speciality.specialityId} label={speciality.type} value={speciality.specialityId}/> 
-                                }
-                                })
-                            }
-                            </Picker> 
-                        </View>     
-                        <Divider />
-                    </View>
-                    
-                    <View>
-                        <Subtitle style={{marginBottom: 5}} type={1} text="Fecha:" />
-                        <Button 
-                            text={moment(this.state.date).format('YYYY-MM-DD').toString()} 
-                            borderSize={1} 
-                            textColor={'#00BCD4'} 
-                            type="outlined" 
-                            icon={<Icon name="date-range" />} 
-                            onPress={this.toggleDatePicker} />
-                            {this.state.showDatePicker && (
-                            <DateTimePicker testID="dateTimePicker"
-                                timeZoneOffsetInMinutes={0}
-                                value={this.state.date}
-                                mode={"date"}
-                                is24Hour={true}
-                                display="default"
-                                maximumDate={moment().add(2, 'month').toDate()}
-                                minimumDate={moment().add(1,'day').toDate()}
-                                style={{backgroundColor:'red'}}
-                                onChange={(event, selectedDate) => { this.selectDateHttpRequest(selectedDate) }} 
-                            />
-                            )
-                        }
-                        <Divider/>
-                    </View>    
-
-                    <View style={{flexDirection: 'row', width: `100%`}}>
-                        <View style={{flex: 1}}>
-                            <Subtitle type={1} text="Hora de inicio" />     
-                            <View style={{borderBottomWidth: 0.5}}>
-                                <Picker   
-                                selectedValue={this.state.startWorkHour}
-                                mode={'dropdown'}
-                                onValueChange={(itemValue, itemIndex) =>
-                                    this.setState({startWorkHour: itemIndex})
-                                }>
-                                {
-                                    hours.slice(0, hours.length - 1).map((hs, key) => {
-                                        return <Picker.Item key={key} label={hs} value={key}/> 
-                                    })
-                                }
-                                </Picker>
-                            </View>
-                        </View>
-                        <View style={{flex: 1}}>
-                            <Subtitle type={1} text="Hora de fin" />     
-                            <View style={{borderBottomWidth: 0.5}}>
-                                <Picker   
-                                // enabled={false}
-                                selectedValue={this.state.finishWorkHour}
-                                style={{height: 50, width: '100%'}}
-                                mode={'dropdown'}
-                                onValueChange={(itemValue, itemIndex) =>
-                                {
-                                    let fakeIndex = itemIndex + 1 + this.state.startWorkHour
-                                    console.log(this.state.startWorkHour, itemIndex,fakeIndex, hours[fakeIndex], hours.length);
-                                    this.setState({finishWorkHour: fakeIndex})
-                                }
-                                }>
-                                {
-                                    hours.slice(this.state.startWorkHour + 1).map((hs, key) => {
-                                        return <Picker.Item key={hs} label={hs} value={key}/> 
-                                    })
-                                }
-                                </Picker>
-                            </View>
-                        </View>
-                    </View>
-
-                    
-                    <Divider/>
-
-                    <View style={{flex: 1}}/>
-                    <Button 
-                    text={'Cancelar'} 
-                    textColor={'#00BCD4'} 
-                    borderSize={2} 
-                    onPress={this.toggleModal}/>
-                    <Button
-                    text={'Agregar horario'}
-                    color={'#00BCD4'} 
-                    icon={<Icon name={'date-range'}/>}
-                    type="flat"
-                    onPress={() => {
-                        console.log(hours[this.state.startWorkHour] + " " + hours[this.state.finishWorkHour])}}
-                    />
-                </View>
-            </Overlay>
-                 */}
                 <Overlay isVisible={this.state.isModalVisible}>
                   <View style= {{flex: 1, marginTop: 8}}>  
                       <View style={{width: '100%', alignItems: 'center', borderBottomColor:'#00BCD4', paddingBottom: 8, borderBottomWidth: 0.5}}>
-                        <Heading style={{color: '#00BCD4'}} type={4} text="Editar horario" />     
+                        <Heading style={{color: '#00BCD4'}} type={4} text="Agregar turnos" />     
                       </View>
                       
                       <View style={{marginTop: 15}}>
@@ -401,7 +301,6 @@ export default class TurnosMedicosView extends React.Component {
                                   onValueChange={(itemValue, itemIndex) =>
                                   {
                                       let fakeIndex = itemIndex + 1 + this.state.startWorkHour
-                                      console.log(this.state.startWorkHour, itemIndex,fakeIndex, hours[fakeIndex], hours.length);
                                       this.setState({finishWorkHour: itemIndex})
                                   }
                                   }>
@@ -418,18 +317,13 @@ export default class TurnosMedicosView extends React.Component {
                       <Divider/>
 
                       <View style={{flex: 1}}/>
-                      {/* <Button 
-                      text={'Eliminar'} 
-                      textColor={'#FF5656'} 
-                      borderSize={2} 
-                      onPress={this.toggleModal}/> */}
                       <Button 
                       text={'Cancelar'} 
                       textColor={'#00BCD4'} 
                       borderSize={2} 
                       onPress={this.toggleModal}/>
                       <Button
-                      text={'Agregar horario'}
+                      text={'Agregar turnos'}
                       color={'#00BCD4'} 
                       icon={<Icon name={'date-range'}/>}
                       type="flat"
@@ -450,14 +344,14 @@ export default class TurnosMedicosView extends React.Component {
                       this.state.workingHoursAndBookings.map(wk =>{
                         if (wk === undefined || wk.bookings === []) return ;
                         else {
-                          return <WorkingHourItem key={wk.id} workHour={wk}/>
+                          return <WorkingHourItem key={wk.day} workHour={wk}/>
                         }
                       })
                     }                  
                   </ScrollView>           
                 </View>
 
-                <View style={{ alignItems: 'center'}}>
+                <View style={{ alignItems: 'center', paddingTop: 40}}>
                     <View style={{
                         position:'absolute',
                         bottom:0,
@@ -465,7 +359,7 @@ export default class TurnosMedicosView extends React.Component {
                     }}>
                         <Button
                         icon={<Icon name="add" />}
-                        text={'Agregar horario'}
+                        text={'Agregar turnos'}
                         type="contained"
                         color={'#00BCD4'}
                         radius={20}
