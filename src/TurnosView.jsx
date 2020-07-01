@@ -12,10 +12,11 @@ export default class TurnosView extends React.Component {
         isModalVisible: false,
         visible:false,
         confirmBooking: false,
+        confirmListaEspera: false,
         selectedItemThree: 1,
         specialityValue: '',
         bookings: [],
-  
+
         specialities: [],
 
         selectedDay_id: 0,
@@ -43,7 +44,8 @@ export default class TurnosView extends React.Component {
     }
     
     toggleModal() {
-      this.setState({isModalVisible: !this.state.isModalVisible, visible: true})
+      this.setState({isModalVisible: !this.state.isModalVisible, visible: true});
+      this.getAllSpecialities();  
     };
   
     async getAllBookings() {
@@ -219,6 +221,31 @@ export default class TurnosView extends React.Component {
       }
     }
 
+    async postWaitiList() {
+      if (this.state.specialityValue != "") {
+        try {
+          fetch("http://192.168.0.224:8080/waitList" , {
+            method: 'PUT',
+            mode: "cors",
+            headers:{ 'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              id: this.props.personData.id,
+              speciality: this.state.specialityValue
+            })
+          })
+          .then(res => {  
+            console.log(res.status)
+            if (res.status == 200) {
+              console.log("sucess")
+            }
+          })
+          .catch(e => console.log(e));
+        } catch (e) {
+          console.log(e) 
+        }
+      }
+    }
+
     async postBooking() {
       if (this.state.specialityValue != '' && this.state.selectedDay_value != `` && this.state.selectedMedic_value != `` && this.state.selectedBooking != ``) {
         try {
@@ -292,6 +319,23 @@ export default class TurnosView extends React.Component {
                 onPress: () => {this.setState({ confirmBooking: false}, this.postBooking)},
               },
             ]}/>
+
+          <Dialog
+            visible={this.state.confirmListaEspera}
+            onTouchOutside={() => this.setState({ confirmListaEspera: false })}
+            title={'Desea aparecer en la lista de espera?'}
+            supportingText={"Se le notificara cuando existan turnos disponibles" }
+            actionItems={[
+              {
+                text: 'Cancelar',
+                onPress: () =>  this.setState({ confirmListaEspera: false }),
+              },
+              {
+                text: 'SI',
+                onPress: () => this.setState({ confirmListaEspera: false}, this.postWaitiList),
+              },
+            ]}/>
+
 
           <Overlay isVisible={this.state.isModalVisible}>
             <View style= {{flex: 1, marginTop: 8}}>  
@@ -400,14 +444,21 @@ export default class TurnosView extends React.Component {
                   textColor={'#E05858'} 
                   borderSize={2} 
                   onPress={this.toggleModal}/>
-                <Button
-                  text={'Agregar turno'}
-                  color={'#E05858'} 
-                  icon={<Icon name={'date-range'}/>}
-                  type="flat"
-                  disabled={this.state.createBookingButton}
-                  onPress={() => {this.setState({confirmBooking: true})}}
-                />
+                {(this.state.createBookingButton) ?
+                  <Button
+                    text={'Agregar a lista de espera'}
+                    color={'#FF5722'} 
+                    type="flat"
+                    onPress={() => {this.setState({confirmListaEspera: true})}} /> 
+                    :
+                  <Button
+                    text={'Agregar turno'}
+                    color={'#E05858'} 
+                    icon={<Icon name={'date-range'}/>}
+                    type="flat"
+                    disabled={this.state.createBookingButton}
+                    onPress={() => {this.setState({confirmBooking: true})}} />
+                }
               </View>
           </Overlay>
 

@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, ScrollView } from 'react-native';
 import { Icon, Overlay } from 'react-native-elements';
-import { Divider, Heading, Subtitle, Button, ListSection, IconButton, ListExpand, ListItem, List, Tabs, Dialog, Appbar } from 'material-bread';
+import { Divider, Heading, Subtitle, Button, ListSection,ProgressCircle, IconButton, Tabs, Dialog, Appbar } from 'material-bread';
 import {Picker} from '@react-native-community/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from "moment";
-import WorkingHourItem from './WorkingHourItem';
+import MedicItem from './MedicItem';
 export default class TurnosMedicosView extends React.Component {
     
     constructor(props) {
@@ -17,6 +17,8 @@ export default class TurnosMedicosView extends React.Component {
         showDatePicker: false,
         bookingDateMedic: [],
        
+        isInProgress: true,
+
         specialities: [],
         specialityValue: '',
         specialityType: "",
@@ -29,6 +31,8 @@ export default class TurnosMedicosView extends React.Component {
 
         workingHoursAndBookings: [],
         exitDialog: false,
+
+        errorCreatingBookings: false,
       }
 
       this.createWorkHour = this.createWorkHour.bind(this);
@@ -40,21 +44,22 @@ export default class TurnosMedicosView extends React.Component {
       this.setState({isModalVisible: !this.state.isModalVisible})
     };
 
-    async getWorkingHoursAndBookings() {
+    async getTodayBookings() {
       try {
-        fetch("http://192.168.0.224:8080/medWorkHs/getWorkHours" ,{
+        this.setState({isInProgress: true});
+        fetch("http://192.168.0.224:8080/booking/medic/getTodayBookingHours" ,{
           method: 'POST',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
           body: JSON.stringify({
-            medicId: this.props.personData.id
+            id: this.props.personData.id
           })
-        }).then(res => {return res.json()})
+        }).then(res => {
+          return res.json()})
         .then(resJson => {
-          let workHours = [];
-          resJson.forEach(wkData => workHours.push(wkData));
-          // workHours.sort((a, b) => (a.time_start).localCompare(b.time_start));
-          this.setState({workingHoursAndBookings: workHours});
+          let bookings = [];
+          resJson.forEach(booking => bookings.push(booking));
+          this.setState({workingHoursAndBookings: bookings, isInProgress: false});
         })
         .catch(e => console.log(e));
       } catch (e) { console.log(e) }
@@ -76,7 +81,7 @@ export default class TurnosMedicosView extends React.Component {
           for (i = 0; i < resJson.length; i++) {
             arr.push(resJson[i]);
           };
-          this.setState({specialities: arr, specialityValue: arr[0].specialityId, specialityValue: arr[0].type});
+          this.setState({specialities: arr, specialityValue: arr[0].specialityId});
         })
         .catch(e => {
           console.log("getAllSpecialities FETCH ERROR");
@@ -89,7 +94,7 @@ export default class TurnosMedicosView extends React.Component {
     }
 
     componentDidMount() {
-      this.getWorkingHoursAndBookings();
+      this.getTodayBookings();
       this.getAllSpecialities();
     }
 
@@ -109,7 +114,6 @@ export default class TurnosMedicosView extends React.Component {
           })
         })
         .then(res => {  
-          console.log("getWorkHours_specDate",res.status)
           return res.json()
         })
         .then(resJson => {
@@ -118,7 +122,6 @@ export default class TurnosMedicosView extends React.Component {
             arr.push(resJson[i]);
           };
           this.setState({bookingDateMedic: arr});
-          console.log(this.state.bookingDateMedic.length);
         })
         .catch(e => console.log(e));
       } catch (e) {
@@ -145,17 +148,73 @@ export default class TurnosMedicosView extends React.Component {
             specialityId: this.state.specialityValue
           })
         })
-        .then(res => {  
-          return res.json()
-        })
-        .then(resJson => {
-          this.getWorkingHoursAndBookings();
+        .then(res => {
+          if (res.status === 200) this.setState({sucessCreatingBookings: true})
+          else if (res.status === 300 || res.status === 400) this.setState({errorCreatingBookings: true});
+          this.getTodayBookings();
           this.toggleModal();
         })
         .catch(e => console.log(e));
       } catch (e) {
         console.log(e) 
       }
+    }
+
+    async getBookings_Week() {
+      try {
+        this.setState({isInProgress: true});
+        fetch("http://192.168.0.224:8080/booking/medic/getWeekBookingHours" , {
+          method: 'POST',
+          mode: "cors",
+          headers:{ 'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            id: this.props.personData.id
+          })
+        })
+        .then(res => {  
+          return res.json()
+        })
+        .then(resJson => {
+          let bookings = [];
+          resJson.forEach(booking => bookings.push(booking));
+          this.setState({workingHoursAndBookings: bookings, isInProgress: false});
+        }).catch(e=> console.log(e))
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    async getBookings_All() {
+
+      try {
+        this.setState({isInProgress: true});
+        fetch("http://192.168.0.224:8080/booking/medic/getAllBookingHours" , {
+          method: 'POST',
+          mode: "cors",
+          headers:{ 'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            id: this.props.personData.id
+          })
+        })
+        .then(res => {  
+          return res.json()
+        })
+        .then(resJson => {
+          let bookings = [];
+          resJson.forEach(booking => bookings.push(booking));
+          this.setState({workingHoursAndBookings: bookings, isInProgress: false});
+        }).catch(e=> console.log(e))
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    changeTab(index) {
+      this.setState({isInProgress: true});
+      if (index === 0) this.getTodayBookings();
+      else if (index === 1 ) this.getBookings_Week();
+      else this.getBookings_All();
+      this.setState({ selectedTab: index })
     }
 
     render() {
@@ -175,13 +234,28 @@ export default class TurnosMedicosView extends React.Component {
                 />
               <Tabs
                 selectedIndex={this.state.selectedTab}
-                handleChange={index => this.setState({ selectedTab: index })}
+                handleChange={index => this.changeTab(index)}
                 backgroundColor={'#00BCD4'}
                 actionItems={[
                   { label: 'Dia' },
                   { label: 'Semana' },
                   { label: 'Todos' },
                 ]}
+              />
+
+              <Dialog
+                visible={this.state.sucessCreatingBookings}
+                onTouchOutside={() => this.setState({ sucessCreatingBookings: false })}
+                title={'Los turnos se crearon con exito!'}
+                actionItems={[{ text: 'OK', onPress: () => {this.setState({ sucessCreatingBookings: false})}}]}
+              />
+
+              <Dialog
+                visible={this.state.errorCreatingBookings}
+                onTouchOutside={() => this.setState({ errorCreatingBookings: false })}
+                title={'Error al crear los turnos!'}
+                supportingText={"Existen turnos entre las horas seleccionadas para esa fecha, por favor, revise la informacion ingresada"}
+                actionItems={[{ text: 'OK', onPress: () => {this.setState({ errorCreatingBookings: false})}}]}
               />
 
               <Dialog
@@ -265,7 +339,7 @@ export default class TurnosMedicosView extends React.Component {
                                 maximumDate={moment().add(2, 'month').toDate()}
                                 minimumDate={moment().add(1,'day').toDate()}
                                 style={{backgroundColor:'red'}}
-                                onChange={(event, selectedDate) => { this.selectDateHttpRequest(selectedDate) }} 
+                                onChange={(event, selectedDate) => {   this.selectDateHttpRequest(selectedDate) }} 
                               />
                             )
                           }
@@ -339,15 +413,24 @@ export default class TurnosMedicosView extends React.Component {
                 </Overlay>
                 
                 <View style={{flex: 1, margin: 10}}>
+                  {(
+                    this.state.isInProgress &&
+                    <View style={{width:"100%", height:"100%", zIndex: 1, position: "absolute", backgroundColor:"rgba(255,255,255,0.6)", justifyContent:'center', alignItems:'center'}}>
+                      <ProgressCircle color={"#00BCD4"}/>
+                    </View>
+                  )}
                   <ScrollView style={{ width: `100%` }}>
+                    <ListSection>
                     {
-                      this.state.workingHoursAndBookings.map(wk =>{
-                        if (wk === undefined || wk.bookings === []) return ;
+                      this.state.workingHoursAndBookings.map(booking =>{
+                        if (booking === undefined ) return ;
                         else {
-                          return <WorkingHourItem key={wk.day} workHour={wk}/>
+                          return <MedicItem key={booking.bookingId} booking={booking}/>
                         }
                       })
-                    }                  
+                    }
+                    </ListSection>
+                                      
                   </ScrollView>           
                 </View>
 

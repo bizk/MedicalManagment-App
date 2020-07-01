@@ -7,7 +7,7 @@ export default class LoginView extends React.Component {
         super(props);
         this.state = {
             loginMessageError: false,
-            userInput: "paciente_1",
+            userInput: "medico_1",
             userSecret: "abc123",
 
             isInProgress: false,
@@ -49,7 +49,7 @@ export default class LoginView extends React.Component {
                 {(
                     this.state.isInProgress &&
                     <View style={{width:"100%", height:"100%", zIndex: 1, position: "absolute", backgroundColor:"rgba(255,255,255,0.6)", justifyContent:'center', alignItems:'center'}}>
-                    <ProgressCircle color={"#E05858"}/>
+                        <ProgressCircle color={"#E05858"}/>
                     </View>
                 )}
                     <View style={{flex: 1, margin: 15}}>
