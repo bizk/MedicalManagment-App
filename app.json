@@ -23,10 +23,13 @@
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "com.bizk.medicalmanagmentapp",
+      "buildNumber": "1.0.0",
       "supportsTablet": true
     },
     "android": {
-      "package": "com.bizk.medicalmanagmentapp"
+      "package": "com.bizk.medicalmanagmentapp",
+      "versionCode": 1
     }
   }
 }
