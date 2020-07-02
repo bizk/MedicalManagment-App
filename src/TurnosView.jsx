@@ -30,6 +30,7 @@ export default class TurnosView extends React.Component {
         availableHours: [],
         
         createBookingButton: true,
+        creatingExistingBooking: false,
 
         exitDialog: false,
       
@@ -259,10 +260,10 @@ export default class TurnosView extends React.Component {
             })
           })
           .then(res => {  
-            if (res.status == 200) {
+            if (res.status === 200) {
               this.getAllBookings();
               this.setState({specialityValue:'',selectedDay_value: ``,selectedMedic_value: ``, selectedBooking: ``, isModalVisible: false});      
-            }
+            } else if (res.status === 300) this.setState({creatingExistingBooking: true})
           }).then(() => this.getAllBookings())
           .catch(e => console.log(e));
         } catch (e) {
@@ -288,6 +289,18 @@ export default class TurnosView extends React.Component {
             ]}
           />
           <Dialog
+            visible={this.state.creatingExistingBooking}
+            onTouchOutside={() => this.setState({ creatingExistingBooking: false })}
+            title={'Conflicto de horarios'}
+            supportingText={"Existen otro turno en el mismo horario y dia."}
+            actionItems={[
+              {
+                text: 'Ok.',
+                onPress: () =>  this.setState({ creatingExistingBooking: false }),
+              }
+            ]}/>
+
+          <Dialog
             visible={this.state.exitDialog}
             onTouchOutside={() => this.setState({ exitDialog: false })}
             title={'Desea cerrar sesion?'}
@@ -301,7 +314,7 @@ export default class TurnosView extends React.Component {
                 onPress: () => {this.setState({ exitDialog: false}, this.props.leaveSession)},
               },
             ]}/>
-          
+
           <Dialog
             visible={this.state.confirmBooking}
             onTouchOutside={() => this.setState({ confirmBooking: false })}
@@ -378,7 +391,7 @@ export default class TurnosView extends React.Component {
                     selectedValue={this.state.selectedDay_value}
                     mode={'dropdown'}
                     onValueChange={(itemValue, itemIndex) => {
-                      this.setState({selectedDay_value: itemValue, selectedDay_id: itemIndex, selectedMedic_value: ''}, this.getMedics_byDateAndSpec)
+                      this.setState({isInProgress: true, selectedDay_value: itemValue, selectedDay_id: itemIndex, selectedMedic_value: ''}, this.getMedics_byDateAndSpec)
                       }}>
                       {
                         this.state.dates.map(day => {
@@ -398,8 +411,7 @@ export default class TurnosView extends React.Component {
                     selectedValue={this.state.selectedMedic_value}
                     mode={'dropdown'}
                     onValueChange={(itemValue, itemIndex) =>{
-                      this.setState({selectedMedic_value: itemValue});
-                      this.getHours_byData();
+                      this.setState({isInProgress: true,selectedMedic_value: itemValue},this.getHours_byData);
                     }}>
                       { (this.state.availableMedics.length > 0) && (
                         this.state.availableMedics.map(medics => {

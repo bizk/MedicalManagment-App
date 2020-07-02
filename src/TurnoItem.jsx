@@ -10,7 +10,7 @@ import {
   Dialog,
   Subtitle
 } from 'material-bread';
-
+import moment from 'moment';
 export default class TurnoItem extends React.Component {
     constructor(props) {
       super(props);
@@ -19,7 +19,10 @@ export default class TurnoItem extends React.Component {
         status: this.props.booking.status,
         cancelDialog: false,
         confirmDialog: false,
+        isConfirmAvailable: false,
       }
+      let a = moment(this.props.booking.day + " " + this.props.booking.time_start)
+      if (a.isBetween(moment().add(1, "h"), moment().add(12, "h"))) this.setState({isConfirmAvailable: true});
       this.confirmBooking = this.confirmBooking.bind(this);
       this.cancelBooking = this.cancelBooking.bind(this);
     }
@@ -149,11 +152,11 @@ export default class TurnoItem extends React.Component {
                 <View style={{flexDirection:'column', backgroundColor:'#fff'}}>
                   <Button text={"Cancelar"} 
                     disabled={(this.state.status === "canceled" || this.state.status === "expirado" || this.state.status === "canceledMedicCentre") ? true : false} 
-                    textColor={"#E05858"} dense 
+                    textColor={"#E05858"} dense
                     onPress={() => this.setState({cancelDialog: true})} />
                   <Button 
                     text={'Confirmar'} 
-                    disabled={(this.state.status === "reservado") ? false : true} 
+                    disabled={(this.state.status === "reservado" && this.state.isConfirmAvailable) ? false : true} 
                     type="outlined"
                     textColor={'#009688'} 
                     borderSize={1} dense 

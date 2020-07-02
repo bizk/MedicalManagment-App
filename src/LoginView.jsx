@@ -7,13 +7,17 @@ export default class LoginView extends React.Component {
         super(props);
         this.state = {
             loginMessageError: false,
-            userInput: "medico_1",
+            userInput: "paciente_1",
             userSecret: "abc123",
 
             isInProgress: false,
         }
         
         this.login = this.login.bind(this);
+    }
+
+    componentDidMount() {
+        this.setState({ userInput: "paciente_1", userSecret: "abc123" });
     }
 
     async login() {
