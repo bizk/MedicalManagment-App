@@ -51,7 +51,7 @@ export default class TurnosView extends React.Component {
   
     async getAllBookings() {
       try{
-        fetch("http://192.168.0.224:8080/booking/patient" ,{
+        fetch(`${backendUrl}booking/patient` ,{
           method: 'POST',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
@@ -79,7 +79,7 @@ export default class TurnosView extends React.Component {
 
     async getAllSpecialities() {
       try {
-        fetch("http://192.168.0.224:8080/speciality" , {
+        fetch(`${backendUrl}speciality` , {
           method: 'GET',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
@@ -109,7 +109,7 @@ export default class TurnosView extends React.Component {
       if (this.state.specialityValue != ``) {
         try {
           this.setState({isInProgress: true})
-          fetch("http://192.168.0.224:8080/booking/getDays" , {
+          fetch(`${backendUrl}booking/getDays` , {
             method: 'POST',
             mode: "cors",
             headers:{ 'Content-Type': 'application/json'},
@@ -146,7 +146,7 @@ export default class TurnosView extends React.Component {
     async getMedics_byDateAndSpec() {
       if (this.state.specialityValue != '' && this.state.selectedDay_value != ``) {
         try {
-        fetch("http://192.168.0.224:8080/booking/getMedics" , {
+        fetch(`${backendUrl}booking/getMedics` , {
           method: 'POST',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
@@ -184,7 +184,7 @@ export default class TurnosView extends React.Component {
     async getHours_byData() {
       if (this.state.specialityValue != '' && this.state.selectedDay_value != `` && this.state.selectedMedic_value != ``) {
         try {
-          fetch("http://192.168.0.224:8080/booking/getHours" , {
+          fetch(`${backendUrl}booking/getHours` , {
             method: 'POST',
             mode: "cors",
             headers:{ 'Content-Type': 'application/json'},
@@ -225,7 +225,7 @@ export default class TurnosView extends React.Component {
     async postWaitiList() {
       if (this.state.specialityValue != "") {
         try {
-          fetch("http://192.168.0.224:8080/waitList" , {
+          fetch(`${backendUrl}waitList` , {
             method: 'PUT',
             mode: "cors",
             headers:{ 'Content-Type': 'application/json'},
@@ -250,7 +250,7 @@ export default class TurnosView extends React.Component {
     async postBooking() {
       if (this.state.specialityValue != '' && this.state.selectedDay_value != `` && this.state.selectedMedic_value != `` && this.state.selectedBooking != ``) {
         try {
-          fetch("http://192.168.0.224:8080/booking" , {
+          fetch(`${backendUrl}booking` , {
             method: 'POST',
             mode: "cors",
             headers:{ 'Content-Type': 'application/json'},

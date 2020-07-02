@@ -7,8 +7,8 @@ export default class LoginView extends React.Component {
         super(props);
         this.state = {
             loginMessageError: false,
-            userInput: "paciente_1",
-            userSecret: "abc123",
+            userInput: "",
+            userSecret: "",
 
             isInProgress: false,
         }
@@ -17,14 +17,14 @@ export default class LoginView extends React.Component {
     }
 
     componentDidMount() {
-        this.setState({ userInput: "paciente_1", userSecret: "abc123" });
+        this.setState({ userInput: "", userSecret: "" });
     }
 
     async login() {
         var x = this.props.loginStatus;
         this.setState({isInProgress: true});
         try{
-          fetch("http://192.168.0.224:8080/users" ,{
+          fetch(`${backendUrl}users` ,{
             method: 'POST',
             mode: "cors",
             headers:{ 'Content-Type': 'application/json'},

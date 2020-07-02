@@ -15,7 +15,10 @@ const theme = {
   }
 }
 
+
 export default function App() {
+  global.backendUrl = "https://medical-managment-backend.herokuapp.com/";
+
   return (
     <NavigationContainer>    
       <ThemeProvider theme={theme}>

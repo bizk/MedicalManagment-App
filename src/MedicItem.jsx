@@ -43,7 +43,7 @@ export default class MedicItem extends React.Component {
 
         async cancelBooking() {
             try {
-                fetch("http://192.168.0.224:8080/booking", {
+                fetch(`${backendUrl}booking`, {
                         method: 'DELETE',
                         mode: "cors",
                         headers: {

@@ -35,7 +35,7 @@ export default class TurnoItem extends React.Component {
 
     async confirmBooking() {
       try {
-        fetch("http://192.168.0.224:8080/booking/confirmBooking", {
+        fetch(`${backendUrl}booking/confirmBooking`, {
             method: 'PUT',
             mode: "cors",
             headers: {
@@ -61,7 +61,7 @@ export default class TurnoItem extends React.Component {
 
     async cancelBooking() {
       try {
-        fetch("http://192.168.0.224:8080/booking/cancelBooking", {
+        fetch(`${backendUrl}booking/cancelBooking`, {
             method: 'PUT',
             mode: "cors",
             headers: {

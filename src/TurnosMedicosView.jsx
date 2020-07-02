@@ -47,7 +47,7 @@ export default class TurnosMedicosView extends React.Component {
     async getTodayBookings() {
       try {
         this.setState({isInProgress: true});
-        fetch("http://192.168.0.224:8080/booking/medic/getTodayBookingHours" ,{
+        fetch(`${backendUrl}booking/medic/getTodayBookingHours` ,{
           method: 'POST',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
@@ -67,7 +67,7 @@ export default class TurnosMedicosView extends React.Component {
   
     async getAllSpecialities() {
       try {
-        fetch("http://192.168.0.224:8080/speciality/medics" ,{
+        fetch(`${backendUrl}speciality/medics` ,{
           method: 'POST',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
@@ -104,7 +104,7 @@ export default class TurnosMedicosView extends React.Component {
 
     async dateHttpRequest() {
       try {
-        fetch("http://192.168.0.224:8080/medWorkHs/getWorkHours_specDate" , {
+        fetch(`${backendUrl}medWorkHs/getWorkHours_specDate` , {
           method: 'POST',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
@@ -136,7 +136,7 @@ export default class TurnosMedicosView extends React.Component {
 
     async createWorkHour() {
       try {
-        fetch("http://192.168.0.224:8080/medWorkHs" , {
+        fetch(`${backendUrl}medWorkHs` , {
           method: 'POST',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
@@ -163,7 +163,7 @@ export default class TurnosMedicosView extends React.Component {
     async getBookings_Week() {
       try {
         this.setState({isInProgress: true});
-        fetch("http://192.168.0.224:8080/booking/medic/getWeekBookingHours" , {
+        fetch(`${backendUrl}booking/medic/getWeekBookingHours` , {
           method: 'POST',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},
@@ -188,7 +188,7 @@ export default class TurnosMedicosView extends React.Component {
 
       try {
         this.setState({isInProgress: true});
-        fetch("http://192.168.0.224:8080/booking/medic/getAllBookingHours" , {
+        fetch(`${backendUrl}booking/medic/getAllBookingHours` , {
           method: 'POST',
           mode: "cors",
           headers:{ 'Content-Type': 'application/json'},

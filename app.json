@@ -1,6 +1,7 @@
 {
   "expo": {
-    "name": "MedicalManagment-App",
+    "name": "Turnos-UADE-App",
+    "description": "Turnos UADE o MedicalManagment App es una aplicacion creada por Carlos Santiago Yanzon pra la materia Aplicaciones Distribuidas de la Carrera Ingenieria Informatica de la Universiad Argentina De la Empresa",
     "slug": "MedicalManagment-App",
     "platforms": [
       "ios",
@@ -23,6 +24,9 @@
     ],
     "ios": {
       "supportsTablet": true
+    },
+    "android": {
+      "package": "com.bizk.medicalmanagmentapp"
     }
   }
 }
